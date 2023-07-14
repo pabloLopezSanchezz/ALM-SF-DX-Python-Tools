@@ -1,0 +1,45 @@
+
+mapSharing = { 
+	externalSharing : [ { Account, ReadWrite } ], 
+	internalSharing : [ { Account, ReadWrite } ] 
+}
+
+- External Sharing
+   - Account -> ReadWrite
+   - Contact -> Read
+
+- Internal Sharing
+   - Contact -> ReadWrite
+
+mapProfiles = {
+	'Admin' : { 
+		ipRange : true,
+		objectPermissions : { 
+			'Account' : {  
+				viewAllRecord : true,
+				modifyAllRecords : true
+			},
+			'Contact' : {  
+				viewAllRecord : true
+			}
+		},
+		userPermissions : set( AuthorApex, EditReadonlyFields, ModifyMetadata )
+	}
+}
+
+- Profiles
+   - Admin
+      . ipRange -> true
+      . objectPermissions
+         .. Account -> viewAllRecords/modifyAllRecords
+         .. Contact -> viewAllRecords
+      . userPermissions
+         .. AuthorApex : true
+         .. AssignPermissionSets
+         .. EditReadonlyFields
+         .. ModifyAllData
+         .. ModifyMetadata
+         .. ViewAllData
+         .. ViewSetup
+   - Agente
+   - Supervisor

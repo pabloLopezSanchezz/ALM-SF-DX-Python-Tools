@@ -1,0 +1,273 @@
+name: Get the Artifact URLs - Validation
+
+# Workflow run name
+run-name: Get the Artifact URLs from git2SF-validation workflow
+
+on:
+  workflow_run:
+    workflows: [Pipeline SF Validation CI]
+    types:
+      - completed
+
+jobs:
+  get_artifact_url:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Setup python v3.7
+      - uses: actions/setup-python@v4
+        name: Install Python v3.7 and cache pip
+        with:
+          python-version: "3.7"
+
+      # Checkout current repository
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        
+      # Clean up downloaded directories
+      - name: Clean up step
+        run: |
+          sudo rm -rf branch_name
+          sudo rm -rf deploy.json
+          sudo rm -rf nomenclatureErrorsReport
+          sudo rm -rf pr_num
+          sudo rm -rf sfdxScannerReport.html
+          sudo rm -rf srcToDeploy.zip
+          sudo rm -rf validate.json
+          sudo rm -rf describe.log
+          ls -la
+
+      # Download worflow artifacts from Git2SF workflow
+      - name: Download workflow artifact
+        id: download_artifacts
+        if: (github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure')
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          workflow: pipeline-run-scripts-validate-ci.yml
+          run_id: ${{ github.event.workflow_run.id }}
+          if_no_artifact_found: fail
+
+      # Display structure of downloaded files
+      - name: Display structure of downloaded files
+        run: |
+          ls -la
+
+      # Read pr_num file
+      - name: Read pr_num v2
+        id: get_pr_num
+        run: |
+          cd ./pr_num && ls -la
+          prnum=$(cat pr_num.txt)
+          echo "$prnum"
+          echo "outprnum=$prnum" >> $GITHUB_OUTPUT
+
+      # Read pr_num file data
+      - name: Read branch_name v2
+        id: get_branch_name
+        run: |
+          cd ./branch_name && ls -la
+          branchname=$(cat branch_name.txt)
+          echo "$branchname"
+          echo "outbranchname=$branchname" >> $GITHUB_OUTPUT
+
+      # Checkout acct-scripts repo
+      - name: Checkout Python_Scripts
+        uses: actions/checkout@v3
+        with:
+          repository: AlticeGroupIT/acct-scripts
+          token: ${{ secrets.V_METADATA_SEC }}
+          path: ./acct-scripts
+      # Checkout path: /home/runner/work/altice_metadata/altice_metadata/
+
+      # Install requirements.txt from acct-scripts
+      - name: Install requirements.txt
+        run: |
+          ls -l
+          python --version
+          pip --version
+          python3 -m pip install -r "./acct-scripts/requirements.txt"
+
+      # Generate the Artifact link to srcToDeploy.zip
+      - name: Generate Artifacts Links
+        id: generate_links
+        if: (github.event.workflow_run.conclusion == 'success' || github.event.workflow_run.conclusion == 'failure')
+        run: |
+          if [ -d "srcToDeploy.zip" ]; then
+            artifactLink=$(python3 ./acct-scripts/utils/artifact_url.py -b ${{ steps.get_branch_name.outputs.outbranchname }} -a srcToDeploy.zip -pr ${{ steps.get_pr_num.outputs.outprnum }} -r ${{github.event.workflow_run.id}} -t ${{secrets.GITHUB_TOKEN}})
+            echo "$artifactLink"
+            echo "SRC_TO_DEPLOY_LINK=$artifactLink" >> $GITHUB_OUTPUT
+          else
+            artifactLink=''
+            echo "$artifactLink"
+            echo "SRC_TO_DEPLOY_LINK=$artifactLink" >> $GITHUB_OUTPUT
+            echo "::warning:: Failure in getting srcToDeploy.zip Artifact URL"
+          fi
+
+          if [ -d "nomenclatureErrorsReport" ]; then
+            nomenclatureArtifactLink=$(python3 ./acct-scripts/utils/artifact_url.py -b ${{ steps.get_branch_name.outputs.outbranchname }} -a nomenclatureErrorsReport -pr ${{ steps.get_pr_num.outputs.outprnum }} -r ${{github.event.workflow_run.id}} -t ${{secrets.GITHUB_TOKEN}})
+            echo "$nomenclatureArtifactLink"
+            echo "NOMENCLATURE_ERROR_LINK=$nomenclatureArtifactLink" >> $GITHUB_OUTPUT
+          else
+            nomenclatureArtifactLink=''
+            echo "$nomenclatureArtifactLink"
+            echo "NOMENCLATURE_ERROR_LINK=$nomenclatureArtifactLink" >> $GITHUB_OUTPUT
+            echo "::warning:: Failure in getting nomenclatureErrorsReport Artifact URL"
+          fi
+
+          if [ -d "validate.json" ]; then
+            validatejsonArtifactLink=$(python3 ./acct-scripts/utils/artifact_url.py -b ${{ steps.get_branch_name.outputs.outbranchname }} -a validate.json -pr ${{ steps.get_pr_num.outputs.outprnum }} -r ${{github.event.workflow_run.id}} -t ${{secrets.GITHUB_TOKEN}})
+            echo "$validatejsonArtifactLink"
+            echo "VALIDATE_JSON_LINK=$validatejsonArtifactLink" >> $GITHUB_OUTPUT
+          else
+            validatejsonArtifactLink=''
+            echo "$validatejsonArtifactLink"
+            echo "VALIDATE_JSON_LINK=$validatejsonArtifactLink" >> $GITHUB_OUTPUT
+            echo "::warning:: Failure in getting validate.json Artifact URL"
+          fi
+
+          if [ -d "deploy.json" ]; then
+            deployJsonArtifactLink=$(python3 ./acct-scripts/utils/artifact_url.py -b ${{ steps.get_branch_name.outputs.outbranchname }} -a deploy.json -pr ${{ steps.get_pr_num.outputs.outprnum }} -r ${{github.event.workflow_run.id}} -t ${{secrets.GITHUB_TOKEN}})
+            echo "$deployJsonArtifactLink"
+            echo "DEPLOY_JSON_LINK=$deployJsonArtifactLink" >> $GITHUB_OUTPUT
+          else
+            deployJsonArtifactLink=''
+            echo "$deployJsonArtifactLink"
+            echo "DEPLOY_JSON_LINK=$deployJsonArtifactLink" >> $GITHUB_OUTPUT
+            echo "::warning:: Failure in getting deploy.json Artifact URL"
+          fi
+
+          if [ -d "sfdxScannerReport.html" ]; then
+            sfdxScannerReport=$(python3 ./acct-scripts/utils/artifact_url.py -b ${{ steps.get_branch_name.outputs.outbranchname }} -a sfdxScannerReport.html -pr ${{ steps.get_pr_num.outputs.outprnum }} -r ${{github.event.workflow_run.id}} -t ${{secrets.GITHUB_TOKEN}})
+            echo "$sfdxScannerReport"
+            echo "SFDX_SCANNER_REPORT=$sfdxScannerReport" >> $GITHUB_OUTPUT
+          else
+            sfdxScannerReport=''
+            echo "$sfdxScannerReport"
+            echo "SFDX_SCANNER_REPORT=$sfdxScannerReport" >> $GITHUB_OUTPUT
+            echo "::warning:: Failure in getting sfdxScannerReport.html Artifact URL"
+          fi
+          
+          if [ -d "describe.log" ]; then
+            describeLog=$(python3 ./acct-scripts/utils/artifact_url.py -b ${{ steps.get_branch_name.outputs.outbranchname }} -a describe.log -pr ${{ steps.get_pr_num.outputs.outprnum }} -r ${{github.event.workflow_run.id}} -t ${{secrets.GITHUB_TOKEN}})
+            echo "$describeLog"
+            echo "DESCRIBE_LOG=$describeLog" >> $GITHUB_OUTPUT
+          else
+            describeLog=''
+            echo "$describeLog"
+            echo "DESCRIBE_LOG=$describeLog" >> $GITHUB_OUTPUT
+            echo "::warning:: Failure in getting describe.log Artifact URL"
+          fi
+          
+          if [ -d "VlocityBuildErrors.log" ]; then
+            VlocityBuildErrors=$(python3 ./acct-scripts/utils/artifact_url.py -b ${{ steps.get_branch_name.outputs.outbranchname }} -a VlocityBuildErrors.log -pr ${{ steps.get_pr_num.outputs.outprnum }} -r ${{github.event.workflow_run.id}} -t ${{secrets.GITHUB_TOKEN}})
+            echo "$VlocityBuildErrors"
+            echo "VLOCITYBUILDERROR_LOG=$VlocityBuildErrors" >> $GITHUB_OUTPUT
+          else
+            VlocityBuildErrors=''
+            echo "$VlocityBuildErrors"
+            echo "VLOCITYBUILDERROR_LOG=$VlocityBuildErrors" >> $GITHUB_OUTPUT
+            echo "::warning:: Failure in getting describe.log Artifact URL"
+          fi
+
+      # Find comments in PR
+      - name: Find Comment
+        uses: peter-evans/find-comment@v2
+        id: lastComment
+        with:
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          comment-author: "github-actions[bot]"
+          direction: last
+
+      # Update a comment PR Thread for Build-Success
+      - name: Update Comment Thread - Delta Package Built Successfully
+        uses: peter-evans/create-or-update-comment@v2
+        if: (steps.generate_links.outputs.SRC_TO_DEPLOY_LINK != '')
+        with:
+          comment-id: ${{ steps.lastComment.outputs.comment-id }}
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          body: |
+            ------
+
+            ### Artifact Links
+
+            + Generated Delta Package [srcToDeploy.zip](${{steps.generate_links.outputs.SRC_TO_DEPLOY_LINK}}) :white_check_mark:
+           # + Generated [NomenclatureReport.html](${{steps.generate_links.outputs.NOMENCLATURE_ERROR_LINK}}) :white_check_mark:
+           # + Generated [Validate.json](${{steps.generate_links.outputs.VALIDATE_JSON_LINK}}) :white_check_mark:
+           # + Generated [Deploy.json](${{steps.generate_links.outputs.DEPLOY_JSON_LINK}}) :white_check_mark:
+
+      # Update a comment PR Thread for describe.log
+      - name: Update Comment Thread - describe.log
+        uses: peter-evans/create-or-update-comment@v2
+        if: (steps.generate_links.outputs.DESCRIBE_LOG != '')
+        with:
+          comment-id: ${{ steps.lastComment.outputs.comment-id }}
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          body: |
+            + Generated [describe.log](${{steps.generate_links.outputs.DESCRIBE_LOG}}) :white_check_mark:
+
+      # Update a comment PR Thread for NomenclatureReport.html
+      - name: Update Comment Thread - NomenclatureReport
+        uses: peter-evans/create-or-update-comment@v2
+        if: (steps.generate_links.outputs.NOMENCLATURE_ERROR_LINK != '')
+        with:
+          comment-id: ${{ steps.lastComment.outputs.comment-id }}
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          body: |
+            + Generated [NomenclatureReport.html](${{steps.generate_links.outputs.NOMENCLATURE_ERROR_LINK}}) :white_check_mark:
+
+      # Update a comment PR Thread for Validate.json
+      - name: Update Comment Thread - Validate.json
+        uses: peter-evans/create-or-update-comment@v2
+        if: (steps.generate_links.outputs.VALIDATE_JSON_LINK != '')
+        with:
+          comment-id: ${{ steps.lastComment.outputs.comment-id }}
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          body: |
+            + Generated [Validate.json](${{steps.generate_links.outputs.VALIDATE_JSON_LINK}}) :white_check_mark:
+
+      # Update a comment PR Thread for Deploy.json
+      - name: Update Comment Thread - Deploy.json
+        uses: peter-evans/create-or-update-comment@v2
+        if: (steps.generate_links.outputs.DEPLOY_JSON_LINK != '')
+        with:
+          comment-id: ${{ steps.lastComment.outputs.comment-id }}
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          body: |
+            + Generated [Deploy.json](${{steps.generate_links.outputs.DEPLOY_JSON_LINK}}) :white_check_mark:
+
+      # Update a comment PR Thread for sfdxScannerReport.html
+      - name: Update Comment Thread - sfdxScannerReport.html
+        uses: peter-evans/create-or-update-comment@v2
+        if: (steps.generate_links.outputs.SFDX_SCANNER_REPORT != '')
+        with:
+          comment-id: ${{ steps.lastComment.outputs.comment-id }}
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          body: |
+            + Generated [sfdxScannerReport.html](${{steps.generate_links.outputs.SFDX_SCANNER_REPORT}}) :white_check_mark:
+      
+      # Update a comment PR Thread for VlocityBuildErrors.log
+      - name: Update Comment Thread - VlocityBuildErrors.log
+        uses: peter-evans/create-or-update-comment@v2
+        if: (steps.generate_links.outputs.VLOCITYBUILDERROR_LOG != '')
+        with:
+          comment-id: ${{ steps.lastComment.outputs.comment-id }}
+          issue-number: ${{ steps.get_pr_num.outputs.outprnum }}
+          body: |
+            + Generated [VlocityBuildError.log](${{steps.generate_links.outputs.VLOCITYBUILDERROR_LOG}}) :white_check_mark:
+
+      # Clean up downloaded directories
+      - name: Clean up step
+        run: |
+          sudo rm -rf branch_name
+          sudo rm -rf deploy.json
+          sudo rm -rf nomenclatureErrorsReport
+          sudo rm -rf pr_num
+          sudo rm -rf sfdxScannerReport.html
+          sudo rm -rf srcToDeploy.zip
+          sudo rm -rf validate.json
+          sudo rm -rf describe.log
+          ls -la

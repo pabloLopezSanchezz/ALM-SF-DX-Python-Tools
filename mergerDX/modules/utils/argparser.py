@@ -33,7 +33,7 @@ def parseArgs():
 
 def mergeParser(subparser):
     ''' Adds arguments for merge subparser '''
-    
+
     subparser.add_argument( '-r', '--remote', default='origin', help='Remote name from which to fetch and checkout, default=\'origin\'' )
     subparser.add_argument( '-s', '--source', required=True, help='Merge source ref, with the code to be merged' )
     subparser.add_argument( '-t', '--target', required=True, help='Merge target ref, changes from source will end here' )

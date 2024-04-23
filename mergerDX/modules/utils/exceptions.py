@@ -245,13 +245,5 @@ class InvalidPath(MergerException):
 
 class NoFullNameError(MergerException):
 
-    def __init__(self, tagName):
+    def __init__( self, tagName ):
         super().__init__( f'No tag found for {tagName}' )
-
-
-class DuplicatedTags(MergerException):
-    ''' Exception raised when duplicated tags are found '''
-    ERROR_CODE = 113
-
-    def __init__(self, filename):
-        super().__init__( f'Duplicated Tags found in file {filename}' )

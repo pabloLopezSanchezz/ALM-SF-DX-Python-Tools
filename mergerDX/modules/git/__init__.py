@@ -98,6 +98,11 @@ def merge(source_branch, target_branch):
     command = (f'git merge --no-ff {source_branch} '
                f'-m "Merge branch {source_branch} into {target_branch}"')
     stdout, errcode = call_subprocess(command)
+    if 'refusing to merge unrelated histories' in stdout:
+        print(f'{INFO_TAG} Refusing to merge unrelated histories on {source_branch} into {target_branch}, bypassing...')
+        command = (f'git merge --no-ff --allow-unrelated-histories {source_branch} '
+                   f'-m "Merge branch {source_branch} into {target_branch}"')
+        stdout, errcode = call_subprocess(command)
     if 'Already up to date.' in stdout:
         raise BranchesUpToDateException(source_branch, target_branch)
     if errcode != 0:

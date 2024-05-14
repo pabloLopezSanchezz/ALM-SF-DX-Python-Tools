@@ -1,0 +1,569 @@
+name: Pipeline SF_UAT_nCino Deployment
+
+# Workflow run name
+run-name: Workflow run PR No - ${{ github.event.pull_request.number }} and PR title - ${{ github.event.pull_request.title }} by @${{ github.actor }}
+
+# Workflow triggers
+on:
+  pull_request:
+    types:
+      - labeled
+    branches:
+      - releases/nCino
+    paths-ignore:
+      - "**/README.md"
+
+# Environment Variables
+env:
+  # REGISTRY: ghcr.io
+  # IMAGE_NAME: ${{ github.repository }}
+  GIT_USER_NAME: github
+  GIT_USER_EMAIL: githubactions@santader.com
+  PR_NUMBER: ${{ github.event.number }}
+
+jobs:
+  installation_authenticate_deploy:
+    runs-on: ubuntu-latest
+    environment: SF_UAT_NCINO
+    # Only executes next steps if Source branch name starts with feature or defect and the label 'Ready for Deploy' exists
+    if: ((startswith(github.head_ref,'SIT/nCino')) && (github.event_name == 'pull_request') && (github.event.label.name == 'Ready for Deploy'))
+    steps:
+      # Save PR number in PR_RUN text file
+      - name: Save the PR number
+        if: ${{github.event_name == 'pull_request'}}
+        shell: bash
+        env:
+          PR_NUM: ${{ github.event.number }}
+        run: |
+          echo $PR_NUM > pr_num.txt
+
+      # Upload PR number
+      - name: Upload Artifact PR number
+        if: ${{github.event_name == 'pull_request'}}
+        uses: actions/upload-artifact@v3
+        with:
+          name: pr_num
+          path: ./pr_num.txt
+          retention-days: 1
+
+      # Save source branch of PR
+      - name: Save the source branch of Pull request
+        if: ${{github.event_name == 'pull_request'}}
+        shell: bash
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+        run: |
+          echo $BRANCH_NAME > branch_name.txt
+
+      # Upload the source branch of Pull request
+      - name: Upload Artifact source branch of Pull request
+        if: ${{github.event_name == 'pull_request'}}
+        uses: actions/upload-artifact@v3
+        with:
+          name: branch_name
+          path: ./branch_name.txt
+          retention-days: 1
+
+      # Checkout the current repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Checkout acct-scripts repo
+      - name: Checkout Python_Scripts
+        uses: actions/checkout@v3
+        with:
+          repository: santander-group-scib-ng/cib-alexan-python-libs
+          token: ${{ secrets.SF_GITHUB_TOKEN }}
+          path: ./acct-scripts
+          ref: main
+
+      # Install requirements.txt from acct-scripts
+      - name: Install requirements.txt
+        run: |
+          ls -l
+          node --version
+          python --version
+          pip --version
+          python3 -m pip install -r "./acct-scripts/requirements.txt"
+
+      # Checking out repo before installing Node
+      - uses: actions/checkout@v3
+        name: Checkout Repository
+
+      # Install github CLI
+      - name: Instalar CLI de GitHub
+        run: |
+          sudo apt update
+          sudo apt install gh
+          echo "${{ secrets.SF_GITHUB_TOKEN }}" | gh auth login --with-token
+
+      # Create a PR comment thread
+      - name: Create PR comment Thread
+        run: |
+          echo -e '## **Starting build #[${{github.run_number}}][1]**\n------\n[1]: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}' > comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} -F comment.txt
+
+      # Install SF CLI V2
+      - name: Install SF CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
+          mkdir -p ~/cli/sf
+          ls -la
+          tar xJf sf-linux-x64.tar.xz -C ~/cli/sf --strip-components 1
+          echo "$HOME/cli/sf/bin" >> $GITHUB_PATH
+          echo The PATH is $GITHUB_PATH
+          ~/cli/sf/bin/sf version
+
+      # Install SFDX-Scanner
+      - name: Install SFDX-Scanner
+        run: |
+          sfdx plugins:install @salesforce/sfdx-scanner
+
+      # Checkout acct-scripts repo
+      - name: Checkout Python_Scripts
+        uses: actions/checkout@v3
+        with:
+          repository: santander-group-scib-ng/cib-alexan-python-libs
+          token: ${{ secrets.SF_GITHUB_TOKEN }}
+          path: ./acct-scripts
+
+      # Git
+      - name: Git Version Check
+        run: |
+          # sudo apt update
+          # sudo apt-get install -y git
+          git --version
+
+      # Update comment in PR Thread: OS dependencies installed
+      - name: Update Comment Thread - Dependencies installed
+        if: ${{github.event_name == 'pull_request'}}
+        run: |
+          echo "+ All dependencies installed" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Store Auth URL
+      - name: Store the SFDX Auth URL
+        run: |
+          echo ${{secrets.SFDX_AUTH_URL}} > ./authFile.txt
+          secretFileSize=$(wc -c "./authFile.txt" | awk '{print $1}')
+          if [ $secretFileSize == 1 ]; then
+            echo "Missing authFile secret. Is this workflow running on a fork?";
+            exit 1;
+          fi
+      # Authenticate with Auth URL
+      - name: Authenticate SFDX Instance
+        id: sfdxAuthenticate
+        run: |
+          echo "Logging as ${{ secrets.SFDXUSERNAME }}"
+
+          authResponse=$(sf org login sfdx-url --sfdx-url-file ./authFile.txt --json)
+          statusCode=$(jq -r '.status' <<< $authResponse)
+
+          # echo $authResponse
+          echo $statusCode
+
+          if [[ "$statusCode" != "0" ]]; then
+            authenticationMessage=$(jq -r '.message' $authResponse)
+            echo "Error found: $authenticationMessage"
+            echo "$authenticationMessage"
+            exit 1
+          fi
+
+      # Authenticate SFDX Instance
+      # - name: Authenticate SFDX Instance
+      #   id: sfdxAuthenticate
+      #   run: |
+      #     echo "Logging as ${{ secrets.SFDXUSERNAME }}"
+
+      #     echo "${{ secrets.SERVERKEY_SECUREFILEPATH}}" > server.key
+      #     authResponse=$(sfdx auth:jwt:grant --clientid "${{secrets.SFDXCONSUMERKEY}}" --jwtkeyfile=server.key --username "${{secrets.SFDXUSERNAME}}" --instanceurl "${{secrets.SFDX_INSTANCE_URL}}" --json)
+      #     statusCode=$(jq -r '.status' <<< $authResponse)
+
+      #     echo $authResponse
+      #     echo $statusCode
+
+      #     if [[ "$statusCode" != "0" ]]; then
+      #       authenticationMessage=$(jq -r '.message' $authResponse)
+      #       echo "Error found: $authenticationMessage"
+      #       echo "$authenticationMessage"
+      #       exit 1
+      #     fi
+
+      # Generate Describe Log
+      - name: Generate Describe Log
+        id: describe
+        run: |
+          sf org list metadata-types --target-org ${{secrets.SFDXUSERNAME}} --output-file describe.log --api-version ${{secrets.API_VERSION}}
+
+      # Upload the output to ./describe.log
+      - uses: actions/upload-artifact@v3
+        name: Artfifact Upload - ./describe.log
+        with:
+          name: describe.log
+          path: ./describe.log
+          retention-days: 1
+
+      # Update comment in PR Thread: Salesforce-Auth-Success
+      - name: Update Comment Thread - Salesforce authentication Successful
+        if: (github.event_name == 'pull_request' && steps.sfdxAuthenticate.outcome =='success')
+        run: |
+          echo "+ Successful Salesforce authentication :white_check_mark:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Configure a global user for Git
+      - name: Configure Global User for Git
+        run: |
+          git config --global user.email ${{ env.GIT_USER_NAME }}
+          git config --global user.name ${{ env.GIT_USER_EMAIL }}
+          git config --global diff.renameLimit 5000
+          git config core.quotepath off
+
+      # Checkout the python scripts with path added
+      - uses: actions/checkout@v3
+        name: Checkout Python_Scripts
+        with:
+          repository: santander-group-scib-ng/cib-alexan-python-libs
+          token: ${{ secrets.SF_GITHUB_TOKEN }}
+          path: ./acct-scripts
+
+      # Run the MergeDX
+      - name: MergerDX
+        id: MergerDX
+        continue-on-error: true
+        run: |
+          set -x
+          python3 ./acct-scripts/mergerDX/merger.py merge_delta -s ${{github.head_ref}} -t ${{github.base_ref}} -a ${{secrets.API_VERSION}} 2>&1 | tee output.txt
+          EXIT_CODE=${PIPESTATUS[0]}
+          if [ $EXIT_CODE -eq 0 ] && [ $(ls srcToDeploy | wc -l) -ne 0 ]; then
+            echo "Success in MergeDX"
+            zip -r srcToDeploy.zip ./srcToDeploy/
+            git rev-parse --verify HEAD
+          elif [ $EXIT_CODE -eq 113 ]; then
+            echo "Entered the elif block with exit code 113"
+            OUTPUT=$(grep -P "^\{.*\}$" output.txt)
+            echo "::set-output name=script_output::$OUTPUT"
+            echo "Exit code: $EXIT_CODE"
+            echo "+ Duplicate Label found: $OUTPUT :x:" >> comment.txt
+            gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+            echo "Executed the gh pr comment command"
+            exit 1
+          else
+            echo "Entered the else block"
+            echo "::warning:: Failure in MergeDX: The srcToDeploy.zip is EMPTY(i.e. No New Code Changes Detected)"
+            exit 1
+          fi
+
+      # Update a comment in PR Thread
+      - name: Update Comment Thread - Delta Package-Not Built
+        if: (steps.MergerDX.outcome != 'success' && github.event_name == 'pull_request')
+        run: |
+          echo "+ Delta Package not built. :x:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Echo if MergerDX script fails
+      - name: Pipeline Delta Package did not built
+        if: (steps.MergerDX.outcome != 'success')
+        run: |
+          echo "::warning::Step MegerDX Failed: Delta Package not built"
+
+      # Upload the output to ./srcToDeploy.zip
+      - uses: actions/upload-artifact@v3
+        if: (steps.MergerDX.outcome == 'success')
+        name: Artfifact Upload - ./srcToDeploy.zip
+        with:
+          name: srcToDeploy.zip
+          path: ./srcToDeploy.zip
+          retention-days: 15
+
+      # Update a comment PR Thread for Build-Success
+      - name: Update Comment Thread - Delta Package Built Successfully
+        if: (github.event_name == 'pull_request' && steps.MergerDX.outcome == 'success')
+        run: |
+          echo -e "+ Delta Package Built Successfully srcToDeploy.zip :white_check_mark:\n Navigate to workflow run URL: [1] :white_check_mark:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Run the Nomenclature script on ./srcToDeploy
+      - name: Nomenclature Check
+        if: (steps.MergerDX.outcome == 'success')
+        id: nomenclatureValidation
+        run: |
+          python3 ./acct-scripts/nomenclatureChecker/nomenclature.py -p ./srcToDeploy
+
+      # Upload Artifact nomenclature-errors.html
+      - uses: actions/upload-artifact@v3
+        if: (steps.nomenclatureValidation.outcome == 'success')
+        name: Artifact Upload - ./nomenclature-errors.html
+        with:
+          name: nomenclatureErrorsReport
+          path: ./nomenclature-errors.html
+          retention-days: 15
+
+      # Update a comment in PR Thread: Nomenclature-Success
+      - name: Update Comment Thread - Nomenclature validation build succesfully
+        if: (steps.nomenclatureValidation.outcome == 'success' && github.event_name == 'pull_request')
+        run: |
+          echo "+ Nomenclature validation build succesfully :white_check_mark:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Update a comment in PR Thread: Nomenclature-Fails
+      - name: Update Comment Thread - Nomenclature validation failed
+        if: (steps.MergerDX.outcome == 'success' && steps.nomenclatureValidation.outcome != 'success' && github.event_name == 'pull_request')
+        run: |
+          echo "+ Nomenclature validation failed. :x:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Scan the code with SFDX-scanner
+      - name: Run SFDX Scanner
+        id: sfdxScanner
+        if: (steps.MergerDX.outcome == 'success')
+        run: |
+          ruleSetPath="./acct-scripts/pmd/rules.xml"
+          reportPath="sfdxScannerReport.html"
+          deployFolderPath="srcToDeploy"
+
+          sfdx scanner:run -f html -o $reportPath -t $deployFolderPath --pmdconfig $ruleSetPath 
+
+          exitStatus=$(echo $?)
+
+      # Upload sfdxScannerReport.html
+      - uses: actions/upload-artifact@v3
+        if: (steps.sfdxScanner.outcome == 'success')
+        name: Artifact Upload - ./sfdxScannerReport.html
+        with:
+          name: sfdxScannerReport.html
+          path: ./sfdxScannerReport.html
+          retention-days: 15
+
+      # Clean up pullRequestBody
+      - name: Clean up step - pullRequestBody.txt
+        run: |
+          sudo rm -rf pullRequestBody.txt
+          ls -la
+
+      # Find unit tests defined in the PR Body version 2
+      - name: Find Unit Tests In Pull Request Body v2
+        if: (steps.MergerDX.outcome == 'success')
+        id: regex-match
+        run: |
+          echo '${{github.event.pull_request.body}}' > pullRequestBody.txt
+          python3 ./acct-scripts/readPRBody/readPRBody.py -s pullRequestBody.txt
+
+      # Print ENV PR_TESTS
+      - name: Echo PR_TESTS
+        run: |
+          ORIGINAL_VALUE="${{ env.PR_TESTS }}"
+          MODIFIED_VALUE="${ORIGINAL_VALUE// /,}"
+
+          MODIFIED_VALUE="${MODIFIED_VALUE//,,/,}"
+
+          MODIFIED_VALUE="$(echo -e "${MODIFIED_VALUE}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+
+          if [ -z "$MODIFIED_VALUE" ]; then
+            echo "PR_TESTS está vacío."
+          else
+            echo "PR_TEST Formateado: $MODIFIED_VALUE"
+            echo "PR_TESTS=$MODIFIED_VALUE" >> $GITHUB_ENV
+          fi
+
+      # Update a comment in PR Thread: If unit tests are defined otherwise skip this step
+      - name: Update Comment Thread - Unit Tests to be run
+        if: (env.PR_TESTS != '' && github.event_name == 'pull_request')
+        run: |
+          echo " + Unit Tests to be run: ${{ env.PR_TESTS }}" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Setting up sfdx force:source:deploy based on the unit tests for the validate and deploy
+      # If unit tests are present then first run those unit test and then deploy
+      # If unit tests are absent then print No tests to run
+      - name: Test Composition
+        # id: testString
+        # echo ::set-output name=TEST_STRING::$testString
+        run: |
+          testToRun='${{env.PR_TESTS}}';
+          if [ -z "$testToRun" ]; then
+            testString=''
+            echo "No Test to run"
+          else
+            testString='--testlevel RunSpecifiedTests -r ${{env.PR_TESTS}}'
+          fi
+          echo "TEST_STRING=$testString" >> $GITHUB_ENV
+
+      # Load specific Variables to this Enviroment
+      - name: SFDX Load Dynamic Vars
+        id: sfdxDynoVar
+        if: (steps.MergerDX.outcome == 'success')
+        continue-on-error: true
+        run: |
+          python3 ./acct-scripts/loadDynoVars/loadDynoVar.py UAT-NCINO
+          echo "SFDX Load Dynamic Vars Completed"
+
+      # Update a comment in PR Thread: If dynamic variables load Succesfully
+      - name: Update Comment Thread - Dynamic Variables Success
+        if: (steps.MergerDX.outcome == 'success' && steps.sfdxDynoVar.outcome == 'success')
+        run: |
+          echo " + The dynamic variables have been loaded correctly in UAT-NCINO environment. :white_check_mark: " >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Update a comment in PR Thread: If dynamic variables fails
+      - name: Update Comment Thread - Dynamic Variables Fails
+        if: (steps.MergerDX.outcome == 'success' && steps.sfdxDynoVar.outcome != 'success')
+        run: |
+          echo " + Failure to load dynamic variables in UAT-NCINO environment :x: " >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # SFDX deploy cmd with check only flag, for unit tests execution
+      - name: SFDX Validate
+        id: sfdxValidate
+        if: (steps.MergerDX.outcome == 'success')
+        continue-on-error: true
+        run: |
+          # sf project deploy validate --source-dir srcToDeploy --target-org ${{secrets.SFDXUSERNAME}} ${{env.TEST_STRING}} --api-version ${{secrets.API_VERSION}} --wait 90 --json > validate.json
+          sfdx force:source:deploy --targetusername ${{secrets.SFDXUSERNAME}} --sourcepath srcToDeploy ${{env.TEST_STRING}} --apiversion ${{secrets.API_VERSION}} --wait 90 -c --json > validate.json
+
+      # SFDX Parse Validate.json to pretty HTML format
+      - name: SFDX Validate LogParser
+        id: sfdxLogParser
+        if: (steps.sfdxValidate.outcome != 'skipped')
+        continue-on-error: true
+        run: |
+          python3 ./acct-scripts//logParserDX/dxLogParser.py logParser -p validate.json -O validate-Report.html
+
+      # Upload the output of force:sorce:deploy cmd in json file
+      - name: Artifact Upload - ./validate-Report.html
+        id: sfdxValidateLogParserArtifact
+        if: (steps.sfdxLogParser.outcome == 'success')
+        uses: actions/upload-artifact@v3
+        with:
+          name: validate-Report.html
+          path: ./validate-Report.html
+          retention-days: 15
+
+      # Upload the output of force:sorce:deploy cmd in json file
+      - name: Artifact Upload - ./validate.json
+        id: sfdxValidateArtifact
+        if: (steps.sfdxValidate.outcome != 'skipped')
+        uses: actions/upload-artifact@v3
+        with:
+          name: validate.json
+          path: ./validate.json
+          retention-days: 15
+
+      # Parse json to extract Status and ID
+      - name: Parse json output
+        #echo ::set-output name=SfdxValidateStatusCode::$statusCode
+        #echo ::set-output name=resultID::$resultId
+        id: parseJson
+        if: (steps.sfdxValidateArtifact.outcome == 'success')
+        run: |
+          statusCode=$(jq -r '.status' validate.json)
+          echo $statusCode
+
+          echo "SfdxValidateStatusCode=$statusCode" >> $GITHUB_ENV
+
+          if [[ "$statusCode" == "0" ]]; then
+            resultId=$(jq -r '.result.id' validate.json)
+            
+            echo "resultID=$resultId" >> $GITHUB_ENV
+          fi
+
+      # Update a comment in PR Thread: Validation-success
+      - name: Update Comment Thread - SFDX Validate Success
+        if: (steps.parseJson.outcome == 'success' && env.SfdxValidateStatusCode == 0 && github.event_name == 'pull_request')
+        run: |
+          echo "+ Validate Success :white_check_mark:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Update a comment in PR Thread: Validation-failed
+      - name: Update comment - SFDX Validate Failed
+        if: (steps.parseJson.outcome == 'success' && env.SfdxValidateStatusCode != 0 && github.event_name == 'pull_request')
+        run: |
+          echo "+ Validate Failed :x:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Stop the pipeline because unit tests are failed
+      - name: Cancel Pipeline Validate Fails
+        if: (steps.parseJson.outcome == 'success' && env.SfdxValidateStatusCode != 0)
+        run: |
+          echo "::error::SFDX Validation Failed: Stop pipeline"
+          exit 1
+
+      # Run force:source:deploy if unit tests executes successfully
+      - name: SFDX Quick Deploy
+        id: sfdxQuickDeploy
+        if: (steps.parseJson.outcome == 'success' && env.SfdxValidateStatusCode == 0 && env.TEST_STRING != '')
+        run: |
+          sfdx force:source:deploy -u ${{secrets.SFDXUSERNAME}} -q ${{env.resultID}} --apiversion ${{secrets.API_VERSION}} --wait 90 --json > deploy.json
+          # sf project deploy quick --target-org ${{secrets.SFDXUSERNAME}} -i ${{env.resultID}} --api-version ${{secrets.API_VERSION}} --wait 90 --json > deploy.json
+
+      # Run force:source:deploy if unit tests not present
+      - name: SFDX Deploy
+        id: sfdxDeploy
+        if: (steps.parseJson.outcome == 'success' && env.SfdxValidateStatusCode == 0 && env.TEST_STRING == '')
+        run: sfdx force:source:deploy --targetusername ${{secrets.SFDXUSERNAME}} --sourcepath srcToDeploy ${{env.TEST_STRING}} --apiversion ${{secrets.API_VERSION}} --wait 90 --json > deploy.json
+
+      # Update a comment in PR Thread: Deployment-success
+      - name: Update Comment Thread - SFDX Deploy comment Success
+        if: ((steps.sfdxDeploy.outcome == 'success' || steps.sfdxQuickDeploy.outcome == 'success') && (github.event_name == 'pull_request'))
+        run: |
+          echo "+ Deployment Success :white_check_mark:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Upload the output of force:sorce:deploy cmd in json file
+      - name: Artifact Upload - ./deploy.json
+        if: (steps.sfdxDeploy.outcome == 'success' || steps.sfdxQuickDeploy.outcome == 'success')
+        uses: actions/upload-artifact@v3
+        with:
+          name: deploy.json
+          path: ./deploy.json
+          retention-days: 15
+
+      # Update a comment in PR Thread: Deployment-failed
+      - name: Update Comment Thread - SFDX Deploy Failure
+        if: ((steps.sfdxDeploy.outcome == 'failure' || steps.sfdxQuickDeploy.outcome == 'failure') && (github.event_name == 'pull_request'))
+        run: |
+          echo "+ Deployment Failed :x:" >> comment.txt
+          gh pr comment ${{ env.PR_NUMBER }} --edit-last -F comment.txt
+
+      # Stop the pipeline if force:source:deploy fails
+      - name: Cancel Pipeline Deploy Fails
+        if: (steps.sfdxDeploy.outcome == 'failure' || steps.sfdxQuickDeploy.outcome == 'failure')
+        run: |
+          echo "::error::SFDX Deploy Failed: Stop pipeline"
+          exit 1
+
+      # Clean up downloaded directories
+      - name: Clean up step
+        if: (steps.regex-match.outcome == 'success' || steps.regex-match.outcome == 'failure')
+        run: |
+          sudo rm -rf pullRequestBody.txt
+          ls -la
+
+        # Update a comment in PR Thread: Deployment-failed
+      - name: Apporve PR
+        id: ApporvePR
+        if: (steps.sfdxDeploy.outcome == 'success' || steps.sfdxQuickDeploy.outcome == 'success')
+        continue-on-error: true
+        run: |
+          echo "Login: @${{ github.event.pull_request.user.login }}"
+
+          if [[ -n "${{ vars.DEFAULT_REVIEWERS }}" ]]; then
+            
+            IFS=',' read -r -a REVIEWERS <<< "${{ vars.DEFAULT_REVIEWERS }}"
+            
+            MENTIONED_REVIEWERS=""
+            for reviewer in "${REVIEWERS[@]}"; do
+              MENTIONED_REVIEWERS+="@$reviewer "
+            done
+
+            if [[ "@${{ github.event.pull_request.user.login }}" != "${{ vars.DEFAULT_REVIEWERS }}" ]]; then
+              gh pr review ${{ github.event.pull_request.number }} --approve --body "Pull Request Review by GitHub-Actions[Bot]
+              ----
+              @${{ github.event.pull_request.user.login }} Pull Request changes approved. $MENTIONED_REVIEWERS, please review."
+            else
+              gh pr review ${{ github.event.pull_request.number }} --comment --body "Pull Request Review by GitHub-Actions[Bot]
+              ----
+              @${{ github.event.pull_request.user.login }} You can't approve your own pull request"
+            fi
+          else
+            echo "DEFAULT_REVIEWERS is not set. Please check your environment variables."
+          fi

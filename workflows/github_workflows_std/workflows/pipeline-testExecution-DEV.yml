@@ -1,0 +1,131 @@
+name: Scheduled workflow for DEV Apex Test Execution
+
+# Workflow run name
+run-name: Scheduled workflow run - ${{github.run_number}} for DEV Apex Test Execution
+
+# Workflow triggers
+on:
+  schedule:
+    # Execute At 02:30 AM UTC on Every Wednesday
+    - cron: "30 2 * * 3"
+
+  workflow_dispatch:
+
+# Environment Variables
+env:
+  # REGISTRY: ghcr.io
+  # IMAGE_NAME: ${{ github.repository }}
+  GIT_USER_NAME: github
+  GIT_USER_EMAIL: githubactions@santander.com
+  PR_NUMBER: ${{ github.event.number }}
+
+jobs:
+  test_execution_uat:
+    runs-on: ubuntu-latest
+    environment: SF_INT
+    steps:
+      # Checkout the current repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Checkout acct-scripts repo
+      - name: Checkout Python_Scripts
+        uses: actions/checkout@v3
+        with:
+          repository: santander-group-scib-ng/cib-alexan-python-libs
+          token: ${{ secrets.SF_GITHUB_TOKEN }}
+          path: ./acct-scripts
+
+      # Install requirements.txt from acct-scripts
+      - name: Install requirements.txt
+        run: |
+          ls -l
+          node --version
+          python --version
+          pip --version
+          python3 -m pip install -r "./acct-scripts/requirements.txt"
+
+      # Install SF CLI V2
+      - name: Install SF CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
+          mkdir -p ~/cli/sf
+          ls -la
+          tar xJf sf-linux-x64.tar.xz -C ~/cli/sf --strip-components 1
+          echo "$HOME/cli/sf/bin" >> $GITHUB_PATH
+          echo The PATH is $GITHUB_PATH
+          ~/cli/sf/bin/sf version
+
+      # Store Auth URL
+      - name: Store the SFDX Auth URL
+        run: |
+          echo ${{secrets.SFDX_AUTH_URL}} > ./authFile.txt
+          secretFileSize=$(wc -c "./authFile.txt" | awk '{print $1}')
+          if [ $secretFileSize == 1 ]; then
+            echo "Missing authFile secret. Is this workflow running on a fork?";
+            exit 1;
+          fi
+      # Authenticate with Auth URL
+      - name: Authenticate SFDX Instance
+        id: sfdxAuthenticate
+        run: |
+          echo "Logging as ${{ secrets.SFDXUSERNAME }}"
+
+          authResponse=$(sf org login sfdx-url --sfdx-url-file ./authFile.txt --json)
+          statusCode=$(jq -r '.status' <<< $authResponse)
+
+          # echo $authResponse
+          echo $statusCode
+
+          if [[ "$statusCode" != "0" ]]; then
+            authenticationMessage=$(jq -r '.message' $authResponse)
+            echo "Error found: $authenticationMessage"
+            echo "$authenticationMessage"
+            exit 1
+          fi
+
+      # Get current date
+      - name: Get current date
+        id: date
+        run: |
+          echo "buildDate"=$(date +'%d-%B-%Y') >> $GITHUB_OUTPUT
+
+      # Run tests on DEV All tests in Org, except the ones that originate from installed managed packages
+      - name: Run Apex Tests in the Org
+        id: testExecution
+        continue-on-error: true
+        run: |
+          sf apex run test --test-level RunLocalTests --target-org ${{secrets.SFDXUSERNAME}} --code-coverage --api-version ${{secrets.API_VERSION}} --result-format json --wait 200 > test_results_DEV_${{ steps.date.outputs.buildDate }}.json
+
+      # Generate code coverage html report
+      - name: Generate Code-Coverage HTML report
+        id: generateReport
+        run: |
+          ls -la
+          python3 ./acct-scripts/codeCoverage/codeCoverage.py -p test_results_DEV_${{ steps.date.outputs.buildDate }}.json
+
+      # Upload artifact
+      - name: Artifact upload - test_results_date.json
+        id: testArtifact
+        if: (steps.testExecution.outcome != 'skipped')
+        uses: actions/upload-artifact@v3
+        with:
+          name: test_results_DEV_${{ steps.date.outputs.buildDate }}.json
+          path: ./test_results_DEV_${{ steps.date.outputs.buildDate }}.json
+          retention-days: 7
+
+      # Rename artifact with date stamp
+      - name: Rename Code-Coverage HTML report
+        run: |
+          ls -la
+          mv report-code-coverage.html report-code-coverage_DEV_${{steps.date.outputs.buildDate}}.html
+
+      # Upload artifact
+      - name: Artifact upload - test_results_date.json
+        id: codeCoverageArtifact
+        if: (steps.generateReport.outcome != 'skipped')
+        uses: actions/upload-artifact@v3
+        with:
+          name: report-code-coverage_DEV_${{steps.date.outputs.buildDate}}.html
+          path: ./report-code-coverage_DEV_${{steps.date.outputs.buildDate}}.html
+          retention-days: 7

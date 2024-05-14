@@ -1,0 +1,124 @@
+name: Scheduled workflow for Retrieve Metadata from PROD
+
+# Workflow run name
+run-name: Scheduled workflow run - ${{github.run_number}} for DEV Apex Test Execution
+
+# Workflow triggers
+on:
+  schedule:
+    # Execute At 02:30 AM UTC on Every Friday
+    - cron: "30 2 * * 5"
+
+  workflow_dispatch:
+
+# Environment Variables
+env:
+  # REGISTRY: ghcr.io
+  # IMAGE_NAME: ${{ github.repository }}
+  GIT_USER_NAME: github
+  GIT_USER_EMAIL: githubactions@santander.com
+
+jobs:
+  retrieve_execution:
+    runs-on: ubuntu-latest
+    environment: SF_PROD
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          ref: develop
+
+      # Checkout acct-scripts repo
+      - name: Checkout Python_Scripts
+        uses: actions/checkout@v3
+        with:
+          repository: santander-group-scib-ng/cib-alexan-python-libs
+          token: ${{ secrets.SF_GITHUB_TOKEN }}
+          path: ./acct-scripts
+
+        # Install github CLI
+      - name: Instalar CLI de GitHub
+        run: |
+          sudo apt update
+          sudo apt install gh
+          echo "${{ secrets.SF_GITHUB_TOKEN }}" | gh auth login --with-token
+
+      # Install requirements.txt from acct-scripts
+      - name: Install requirements.txt
+        run: |
+          ls -l
+          node --version
+          python --version
+          pip --version
+          python3 -m pip install -r "./acct-scripts/requirements.txt"
+
+      # Install SF CLI V2
+      - name: Install SF CLI
+        run: |
+          wget https://developer.salesforce.com/media/salesforce-cli/sf/channels/stable/sf-linux-x64.tar.xz
+          mkdir -p ~/cli/sf
+          ls -la
+          tar xJf sf-linux-x64.tar.xz -C ~/cli/sf --strip-components 1
+          echo "$HOME/cli/sf/bin" >> $GITHUB_PATH
+          echo The PATH is $GITHUB_PATH
+          ~/cli/sf/bin/sf version
+
+      # Store Auth URL
+      - name: Store the SFDX Auth URL
+        run: |
+          echo ${{secrets.SFDX_AUTH_URL}} > ./authFile.txt
+          secretFileSize=$(wc -c "./authFile.txt" | awk '{print $1}')
+          if [ $secretFileSize == 1 ]; then
+            echo "Missing authFile secret. Is this workflow running on a fork?";
+            exit 1;
+          fi
+      # Authenticate with Auth URL
+      - name: Authenticate SFDX Instance
+        id: sfdxAuthenticate
+        run: |
+          echo "Logging as ${{ secrets.SFDXUSERNAME }}"
+          authResponse=$(sf org login sfdx-url --sfdx-url-file ./authFile.txt --json)
+          statusCode=$(jq -r '.status' <<< $authResponse)
+
+          # echo $authResponse
+          echo $statusCode
+          if [[ "$statusCode" != "0" ]]; then
+            authenticationMessage=$(jq -r '.message' $authResponse)
+            echo "Error found: $authenticationMessage"
+            echo "$authenticationMessage"
+            exit 1
+          fi
+
+      - name: Git Setup & Config
+        run: |
+          git config --global user.email ${{ env.GIT_USER_NAME }}
+          git config --global user.name ${{ env.GIT_USER_EMAIL }}
+          TIMESTAMP=$(date '+%Y%m%d%H%M%S')
+          echo "TIMESTAMP=$TIMESTAMP" >> $GITHUB_ENV
+          git checkout -b feature/publicGroup_$TIMESTAMP
+          echo "Checked out"
+
+      - name: Salesforce Data Query
+        run: |
+          sf data query -o ${{secrets.SFDXUSERNAME}} --query "Select DeveloperName from Group where LastModifiedDate > LAST_N_WEEKS:1 and Type='Regular' and CreatedDate > LAST_N_WEEKS:1" -t --json > query.json
+
+      - name: Salesforce Data query result archive artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: query-result
+          path: query.json
+
+      - name: Generate Package String
+        run: python3 ./acct-scripts/utils/generatePackage.py query.json
+
+      - name: Salesforce Retrieval Process
+        run: |
+          echo "sf project retrieve start -o ${{secrets.SFDXUSERNAME}} --metadata ${{ env.METADATA }}"
+          sf project retrieve start -o ${{secrets.SFDXUSERNAME}} --metadata ${{ env.METADATA }}
+
+      - name: Save Changes
+        run: |
+          git add force-app/main/default/groups
+          git commit -m "Retrieve on $TIMESTAMP"
+          git push origin feature/publicGroup_$TIMESTAMP
+          gh pr create -a x417008-sgt_sangroup,x334420-sgt_sangroup -r x417008-sgt_sangroup,x334420-sgt_sangroup -B develop -F .github/github_template.md --fill-first -l Auto-Alignment

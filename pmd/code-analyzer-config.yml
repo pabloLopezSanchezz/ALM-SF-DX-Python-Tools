@@ -1,0 +1,227 @@
+# ======================================================================
+# CODE ANALYZER CONFIGURATION
+# Migrated from legacy rules.xml - Quickstart configuration for Salesforce Apex
+# To learn more about this configuration, visit:
+#   https://developer.salesforce.com/docs/platform/salesforce-code-analyzer/guide/config-custom.html
+# ======================================================================
+
+config_root: null
+log_folder: null
+log_level: 4
+
+# Rule override settings
+rules:
+
+  # ======================================================================
+  # PMD ENGINE RULE OVERRIDES
+  # Migrated from legacy rules.xml - Quickstart configuration for Salesforce Apex
+  # ======================================================================
+  pmd:
+    # ===== COMPLEXITY RULES =====
+    ExcessiveClassLength:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    ExcessiveParameterList:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    ExcessivePublicCount:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    NcssConstructorCount:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    NcssMethodCount:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    NcssTypeCount:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    StdCyclomaticComplexity:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    TooManyFields:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    AvoidDeeplyNestedIfStmts:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    CyclomaticComplexity:
+      severity: 3
+      tags: ["Recommended", "Complexity", "Design"]
+    # ===== PERFORMANCE RULES =====
+    AvoidSoqlInLoops:
+      severity: 3
+      tags: ["Recommended", "Performance"]
+    AvoidSoslInLoops:
+      severity: 3
+      tags: ["Recommended", "Performance"]
+    AvoidDmlStatementsInLoops:
+      severity: 3
+      tags: ["Recommended", "Performance"]
+    # ===== ERROR PRONE RULES =====
+    AvoidDirectAccessTriggerMap:
+      severity: 3
+      tags: ["Recommended", "Performance", "ErrorProne"]
+    AvoidNonExistentAnnotations:
+      severity: 3
+      tags: ["Recommended", "Style", "ErrorProne"]
+    AvoidHardcodingId:
+      severity: 3
+      tags: ["Recommended", "Security", "ErrorProne"]
+    MethodWithSameNameAsEnclosingClass:
+      severity: 3
+      tags: ["Recommended", "Style", "ErrorProne"]
+    EmptyCatchBlock:
+      severity: 3
+      tags: ["Recommended", "Style", "ErrorProne"]
+    EmptyIfStmt:
+      severity: 3
+      tags: ["Recommended", "Style", "ErrorProne"]
+    EmptyWhileStmt:
+      severity: 3
+      tags: ["Recommended", "Style", "ErrorProne"]
+    EmptyTryOrFinallyBlock:
+      severity: 3
+      tags: ["Recommended", "Style", "ErrorProne"]
+    EmptyStatementBlock:
+      severity: 3
+      tags: ["Recommended", "Style", "ErrorProne"]
+    ApexCSRF:
+      severity: 3
+      tags: ["Recommended", "Security", "ErrorProne"]
+    # ===== BEST PRACTICES RULES =====
+    AvoidLogicInTrigger:
+      severity: 3
+      tags: ["Recommended", "Style", "BestPractices"]
+    AvoidGlobalModifier:
+      severity: 3
+      tags: ["Recommended", "Style", "BestPractices"]
+    ApexUnitTestClassShouldHaveAsserts:
+      severity: 3
+      tags: ["Recommended", "BugRisk", "BestPractices"]
+    ApexUnitTestShouldNotUseSeeAllDataTrue:
+      severity: 3
+      tags: ["Recommended", "BugRisk", "BestPractices"]
+    DebugsShouldUseLoggingLevel:
+      severity: 3
+      tags: ["Recommended", "Clarity", "BestPractices"]
+    # ===== CODE STYLE / NAMING RULES =====
+    ClassNamingConventions:
+      severity: 3
+      tags: ["Recommended", "Style", "Naming"]
+    MethodNamingConventions:
+      severity: 3
+      tags: ["Recommended", "Style", "Naming"]
+    FieldNamingConventions:
+      severity: 3
+      tags: ["Recommended", "Style", "Naming"]
+    FormalParameterNamingConventions:
+      severity: 3
+      tags: ["Recommended", "Style", "Naming"]
+    LocalVariableNamingConventions:
+      severity: 3
+      tags: ["Recommended", "Style", "Naming"]
+    PropertyNamingConventions:
+      severity: 3
+      tags: ["Recommended", "Style", "Naming"]
+    # ===== BRACES RULES =====
+    IfStmtsMustUseBraces:
+      severity: 3
+      tags: ["Recommended", "Style", "Braces"]
+    WhileLoopsMustUseBraces:
+      severity: 3
+      tags: ["Recommended", "Style", "Braces"]
+    IfElseStmtsMustUseBraces:
+      severity: 3
+      tags: ["Recommended", "Style", "Braces"]
+    ForLoopsMustUseBraces:
+      severity: 3
+      tags: ["Recommended", "Style", "Braces"]
+    OneDeclarationPerLine:
+      severity: 3
+      tags: ["Recommended", "Style"]
+    # ===== SECURITY RULES =====
+    ApexSharingViolations:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexInsecureEndpoint:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexOpenRedirect:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexSOQLInjection:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexXSSFromURLParam:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexXSSFromEscapeFalse:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexBadCrypto:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexCRUDViolation:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexDangerousMethods:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    ApexSuggestUsingNamedCred:
+      severity: 3
+      tags: ["Recommended", "Security"]
+    # ===== DOCUMENTATION RULES =====
+    ApexDoc:
+      severity: 3
+      tags: ["Recommended", "Style", "Documentation"]
+
+  # Other engines - use defaults
+  retire-js: {}
+  regex: {}
+  eslint: {}
+  cpd: {}
+  sfge: {}
+  flow: {}
+
+# Engine specific configuration
+engines:
+
+  # Disable engines we don't need for Apex analysis
+  retire-js:
+    disable_engine: true
+
+  regex:
+    disable_engine: true
+
+  eslint:
+    disable_engine: true
+
+  cpd:
+    disable_engine: false
+
+  sfge:
+    disable_engine: true
+
+  flow:
+    disable_engine: true
+
+  # PMD Engine - Main engine for Apex analysis
+  pmd:
+    disable_engine: false
+    java_command: null
+
+    file_extensions:
+      apex:
+        - .cls
+        - .trigger
+      visualforce:
+        - .page
+        - .component
+
+    java_classpath_entries: []
+    custom_rulesets: []
+
+# ======================================================================
+# END OF CODE ANALYZER CONFIGURATION
+# ======================================================================

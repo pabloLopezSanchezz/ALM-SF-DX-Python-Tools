@@ -42,7 +42,8 @@ class AzureDevOpsHandler():
 		if response.statusCode == 200:
 			commentId = response.responseBody[ 'id' ]
 			print( f'Thread created succesfully with id \'{commentId}\'' )
-			print( f'##vso[task.setvariable variable=pr_thread_id]{commentId}' )
+			print( f'##vso[task.setvariable variable=pr_thread_id;isOutput=true]{commentId}' )
+			print( f'##vso[task.setvariable variable=pullRequestThreadId]{commentId}' )
 		else:
 			print( f'Could not create thread on pull request {pullRequestId} ({response.responseBody} -- {response.statusCode})' )
 

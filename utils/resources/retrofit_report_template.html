@@ -3,8 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAGNUM - LQA Retrofit Report</title>
+    <title>MAGNUM - Retrofit Report</title>
     <style>
+        :root {
+            --magnum-black: #0b0b0b;
+            --magnum-charcoal: #1a1a1a;
+            --magnum-gold: #c7a24a;
+            --magnum-gold-strong: #a9852a;
+            --magnum-cream: #f7f2e8;
+            --magnum-cream-2: #eadfc9;
+            --magnum-white: #ffffff;
+            --status-success: #2e7d32;
+            --status-failed: #b71c1c;
+            --status-skipped: #8a6d3b;
+            --status-disabled: #6c6c6c;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,10 +26,11 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(160deg, var(--magnum-black) 0%, var(--magnum-charcoal) 50%, #2c2c2c 100%);
+            color: var(--magnum-cream);
             min-height: 100vh;
-            padding: 20px;
+            padding: 28px;
         }
 
         .container {
@@ -23,321 +38,256 @@
             margin: 0 auto;
         }
 
-        /* Hero Section */
+        /* Hero */
         .hero {
-            background: white;
+            background: radial-gradient(120% 120% at 20% 0%, rgba(199, 162, 74, 0.25) 0%, rgba(11, 11, 11, 0.95) 55%, rgba(11, 11, 11, 1) 100%);
+            border: 1px solid rgba(199, 162, 74, 0.25);
             border-radius: 20px;
-            padding: 60px 40px;
-            margin-bottom: 30px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            text-align: center;
+            padding: 48px 42px;
+            margin-bottom: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
             position: relative;
             overflow: hidden;
         }
 
-        .hero::before {
-            content: '';
+        .hero::after {
+            content: "";
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 6px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-            background-size: 200% 100%;
-            animation: gradient 3s ease infinite;
+            top: -40px;
+            right: -60px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(199, 162, 74, 0.45) 0%, rgba(199, 162, 74, 0) 70%);
+            opacity: 0.9;
         }
 
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .hero-title {
+            font-size: 34px;
+            font-weight: 800;
+            letter-spacing: 0.6px;
+            color: var(--magnum-cream);
+            margin-bottom: 8px;
         }
 
-        .logo {
-            font-size: 48px;
-            font-weight: 900;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 10px;
-            letter-spacing: 2px;
-        }
-
-        .hero h1 {
-            font-size: 36px;
-            color: #2d3748;
-            margin-bottom: 10px;
-        }
-
-        .hero .subtitle {
-            font-size: 18px;
-            color: #718096;
-            margin-bottom: 20px;
-        }
-
-        .hero .date {
-            display: inline-block;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 10px 30px;
-            border-radius: 25px;
-            font-weight: 600;
+        .hero-subtitle {
+            color: var(--magnum-cream-2);
             font-size: 16px;
+            margin-bottom: 18px;
         }
 
-        /* Statistics Cards */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
+        .hero-meta {
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
         }
 
-        .stat-card {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .stat-icon {
-            font-size: 40px;
-            margin-bottom: 15px;
-        }
-
-        .stat-value {
-            font-size: 48px;
-            font-weight: 900;
-            color: #2d3748;
-            margin-bottom: 5px;
-        }
-
-        .stat-label {
-            font-size: 14px;
-            color: #718096;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .hero-pill {
+            background: rgba(199, 162, 74, 0.15);
+            border: 1px solid rgba(199, 162, 74, 0.35);
+            color: var(--magnum-cream);
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 13px;
             font-weight: 600;
         }
 
-        /* Streams Section */
+        /* Summary cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: var(--magnum-white);
+            color: var(--magnum-black);
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(199, 162, 74, 0.2);
+        }
+
+        .summary-label {
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+            color: #5a4b2a;
+            margin-bottom: 6px;
+            font-weight: 700;
+        }
+
+        .summary-value {
+            font-size: 34px;
+            font-weight: 800;
+            color: var(--magnum-black);
+        }
+
+        .summary-footnote {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #7a6a46;
+        }
+
+        /* Streams */
         .streams-section {
-            background: white;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
+            background: var(--magnum-white);
+            color: var(--magnum-black);
+            border-radius: 18px;
+            padding: 28px;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(199, 162, 74, 0.2);
+            margin-bottom: 24px;
         }
 
         .section-title {
-            font-size: 28px;
-            color: #2d3748;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 3px solid #667eea;
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 18px;
+            color: var(--magnum-black);
+            border-left: 4px solid var(--magnum-gold);
+            padding-left: 12px;
         }
 
         .stream-card {
-            background: #f7fafc;
-            border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 15px;
-            border-left: 5px solid #cbd5e0;
-            transition: all 0.3s ease;
-        }
-
-        .stream-card.success {
-            border-left-color: #48bb78;
-            background: linear-gradient(90deg, rgba(72, 187, 120, 0.1) 0%, rgba(247, 250, 252, 1) 100%);
-        }
-
-        .stream-card.failed {
-            border-left-color: #f56565;
-            background: linear-gradient(90deg, rgba(245, 101, 101, 0.1) 0%, rgba(247, 250, 252, 1) 100%);
-        }
-
-        .stream-card.skipped {
-            border-left-color: #ed8936;
-            background: linear-gradient(90deg, rgba(237, 137, 54, 0.1) 0%, rgba(247, 250, 252, 1) 100%);
-        }
-
-        .stream-card.disabled {
-            opacity: 0.5;
-            border-left-color: #cbd5e0;
-        }
-
-        .stream-header {
-            display: flex;
-            justify-content: space-between;
+            background: #fdfbf7;
+            border-radius: 14px;
+            padding: 18px 20px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 12px;
             align-items: center;
-            margin-bottom: 15px;
         }
+
+        .stream-card.success { border-left: 5px solid var(--status-success); }
+        .stream-card.failed { border-left: 5px solid var(--status-failed); }
+        .stream-card.skipped { border-left: 5px solid var(--status-skipped); }
+        .stream-card.disabled { border-left: 5px solid var(--status-disabled); }
 
         .stream-name {
-            font-size: 22px;
+            font-size: 18px;
             font-weight: 700;
-            color: #2d3748;
-        }
-
-        .stream-badge {
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .badge-success {
-            background: #48bb78;
-            color: white;
-        }
-
-        .badge-failed {
-            background: #f56565;
-            color: white;
-        }
-
-        .badge-skipped {
-            background: #ed8936;
-            color: white;
-        }
-
-        .badge-disabled {
-            background: #cbd5e0;
-            color: #718096;
+            margin-bottom: 6px;
         }
 
         .stream-details {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            color: #4a5568;
-            font-size: 14px;
-        }
-
-        .detail-item {
-            display: flex;
-            align-items: center;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 8px;
+            font-size: 13px;
+            color: #3c3c3c;
         }
 
-        .detail-icon {
-            font-size: 18px;
+        .stream-badge {
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: white;
+        }
+
+        .badge-success { background: var(--status-success); }
+        .badge-failed { background: var(--status-failed); }
+        .badge-skipped { background: var(--status-skipped); }
+        .badge-disabled { background: var(--status-disabled); }
+
+        .stream-note {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6a5b3a;
+            background: rgba(199, 162, 74, 0.12);
+            border: 1px solid rgba(199, 162, 74, 0.25);
+            padding: 8px 10px;
+            border-radius: 10px;
         }
 
         /* Footer */
         .footer {
             text-align: center;
-            color: white;
-            padding: 20px;
-            font-size: 14px;
+            color: var(--magnum-cream-2);
+            font-size: 13px;
         }
 
         .footer a {
-            color: white;
+            color: var(--magnum-gold);
             text-decoration: none;
-            border-bottom: 1px solid white;
+            border-bottom: 1px solid rgba(199, 162, 74, 0.6);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero {
-                padding: 40px 20px;
-            }
-
-            .hero h1 {
-                font-size: 28px;
-            }
-
-            .logo {
-                font-size: 36px;
-            }
-
-            .streams-section {
-                padding: 25px;
-            }
-
-            .stat-value {
-                font-size: 36px;
-            }
+        @media (max-width: 720px) {
+            .hero { padding: 32px 26px; }
+            .hero-title { font-size: 28px; }
+            .summary-value { font-size: 28px; }
+            .stream-card { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Hero Section -->
-        <div class="hero">
-            <div class="logo">MAGNUM</div>
-            <h1>LQA Retrofit Report</h1>
-            <p class="subtitle">Automated synchronization from LQA to development streams</p>
-            <div class="date">{{ retrofit_date }}</div>
-        </div>
+        <section class="hero">
+            <div class="hero-title">LQA Retrofit Report</div>
+            <div class="hero-subtitle">Automated alignment from LQA to development streams</div>
+            <div class="hero-meta">
+                <span class="hero-pill">Date: {{ retrofit_date }}</span>
+                <span class="hero-pill">Source: {{ source_branch }}</span>
+                <span class="hero-pill">Dry Run: {{ dry_run }}</span>
+            </div>
+        </section>
 
-        <!-- Statistics -->
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-icon">Streams Processed</div>
-                <div class="stat-value">{{ stats.enabled_count }}</div>
-                <div class="stat-label">Streams Processed</div>
+        <section class="summary-grid">
+            <div class="summary-card">
+                <div class="summary-label">Streams Processed</div>
+                <div class="summary-value">{{ stats.enabled_count }}</div>
+                <div class="summary-footnote">Total streams enabled</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">Successful</div>
-                <div class="stat-value">{{ stats.success_count }}</div>
-                <div class="stat-label">Successful</div>
+            <div class="summary-card">
+                <div class="summary-label">Successful</div>
+                <div class="summary-value">{{ stats.success_count }}</div>
+                <div class="summary-footnote">Aligned without issues</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">Failed</div>
-                <div class="stat-value">{{ stats.failed_count }}</div>
-                <div class="stat-label">Failed</div>
+            <div class="summary-card">
+                <div class="summary-label">Failed</div>
+                <div class="summary-value">{{ stats.failed_count }}</div>
+                <div class="summary-footnote">Needs attention</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-icon">Success Rate</div>
-                <div class="stat-value">{{ stats.success_rate }}%</div>
-                <div class="stat-label">Success Rate</div>
+            <div class="summary-card">
+                <div class="summary-label">Success Rate</div>
+                <div class="summary-value">{{ stats.success_rate }}%</div>
+                <div class="summary-footnote">Based on enabled streams</div>
             </div>
-        </div>
+        </section>
 
-        <!-- Streams Details -->
-        <div class="streams-section">
-            <h2 class="section-title">Stream Details</h2>
-            
+        <section class="streams-section">
+            <div class="section-title">Stream Status</div>
             {% for stream_name, stream in streams.items() %}
             <div class="stream-card {{ stream.status_class }}">
-                <div class="stream-header">
+                <div>
                     <div class="stream-name">{{ stream.name }}</div>
-                    <span class="stream-badge {{ stream.badge.class }}">{{ stream.badge.text }}</span>
+                    <div class="stream-details">
+                        <div>Source: <strong>{{ source_branch }}</strong></div>
+                        <div>Target: <strong>Develop{{ stream.name }}</strong></div>
+                        <div>Status: <strong>{{ stream.result }}</strong></div>
+                    </div>
+                    {% if stream.enabled != 'True' %}
+                    <div class="stream-note">Alignment skipped because this stream is disabled.</div>
+                    {% elif stream.result not in ['Succeeded', 'Failed'] %}
+                    <div class="stream-note">Alignment skipped because no changes were detected for this stream.</div>
+                    {% endif %}
                 </div>
-                <div class="stream-details">
-                    <div class="detail-item">
-                        <span class="detail-icon">Source</span>
-                        Source: <strong>{{ source_branch }}</strong>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">Target</span>
-                        Target: <strong>Develop{{ stream.name }}</strong>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-icon">Status</span>
-                        Status: <strong>{{ stream.result }}</strong>
-                    </div>
-                </div>
+                <div class="stream-badge {{ stream.badge.class }}">{{ stream.badge.text }}</div>
             </div>
             {% endfor %}
-        </div>
+        </section>
 
-        <!-- Footer -->
-        <div class="footer">
-            <p>Generated automatically by MAGNUM DevOps Pipeline</p>
-            <p>Build: <a href="{{ build_url }}" target="_blank">{{ build_number }}</a> | Dry Run: {{ dry_run }}</p>
-        </div>
+        <section class="footer">
+            <p>Generated by MAGNUM DevOps Pipeline</p>
+            <p>Build: <a href="{{ build_url }}" target="_blank">{{ build_number }}</a></p>
+        </section>
     </div>
 </body>
 </html>

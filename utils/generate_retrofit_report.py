@@ -82,6 +82,62 @@ def get_stream_badge(result, enabled, has_changes):
         return {'class': 'badge-skipped', 'text': 'SKIPPED'}
 
 
+def process_lqa_commits(commits, repository_url):
+    """Process LQA commits and group by stream."""
+    # Known streams
+    streams = ['TpmEU', 'B2BEU', 'RexEU', 'CSEU', 'CabEU']
+    
+    # Group commits by stream
+    commits_by_stream = {stream: [] for stream in streams}
+    commits_by_stream['Unknown'] = []
+    
+    for commit in commits:
+        stream = commit.get('stream', 'Unknown')
+        
+        # Capitalize folder names for display
+        folder_counts = commit.get('folderCounts', {})
+        formatted_folders = []
+        for folder, count in sorted(folder_counts.items()):
+            # Capitalize first letter of folder name
+            display_name = folder.capitalize() if folder else 'Other'
+            formatted_folders.append({
+                'name': display_name,
+                'count': count
+            })
+        
+        # Build commit URL
+        commit_url = f"{repository_url}/commit/{commit.get('hash', '')}"
+        
+        processed_commit = {
+            'hash': commit.get('hash', ''),
+            'shortHash': commit.get('shortHash', ''),
+            'author': commit.get('author', 'Unknown'),
+            'date': commit.get('date', ''),
+            'subject': commit.get('subject', ''),
+            'totalFiles': commit.get('totalFiles', 0),
+            'folders': formatted_folders,
+            'url': commit_url
+        }
+        
+        if stream in commits_by_stream:
+            commits_by_stream[stream].append(processed_commit)
+        else:
+            commits_by_stream['Unknown'].append(processed_commit)
+    
+    # Remove empty streams
+    commits_by_stream = {k: v for k, v in commits_by_stream.items() if v}
+    
+    # Calculate totals
+    total_commits = len(commits)
+    total_files = sum(c.get('totalFiles', 0) for c in commits)
+    
+    return {
+        'by_stream': commits_by_stream,
+        'total_commits': total_commits,
+        'total_files': total_files
+    }
+
+
 def main():
     """Main function to generate HTML report."""
     if len(sys.argv) < 2:
@@ -97,17 +153,26 @@ def main():
     with open(config_path, 'r') as f:
         config = json.load(f)
     
+    # Process LQA commits first to assign to streams
+    repository_url = config.get('repository_url', '')
+    lqa_commits_raw = config.get('lqa_commits', [])
+    lqa_commits = process_lqa_commits(lqa_commits_raw, repository_url)
+    
     # Prepare streams data
     streams_data = {}
     for stream_name, stream_info in config['streams'].items():
         has_changes = stream_info.get('hasChanges', 'unknown')
+        # Get commits for this stream
+        stream_commits = lqa_commits['by_stream'].get(stream_name, [])
         streams_data[stream_name] = {
             'name': stream_name,
             'result': stream_info['result'],
             'enabled': stream_info['enabled'],
             'hasChanges': has_changes,
             'status_class': get_stream_status_class(stream_info['result'], stream_info['enabled'], has_changes),
-            'badge': get_stream_badge(stream_info['result'], stream_info['enabled'], has_changes)
+            'badge': get_stream_badge(stream_info['result'], stream_info['enabled'], has_changes),
+            'commits': stream_commits,
+            'commits_count': len(stream_commits)
         }
     
     # Calculate statistics
@@ -132,9 +197,11 @@ def main():
         source_branch=config['source_branch'],
         build_number=config['build_number'],
         build_url=config['build_url'],
+        repository_url=repository_url,
         dry_run=config['dry_run'],
         stats=stats,
-        streams=streams_data
+        streams=streams_data,
+        lqa_commits=lqa_commits
     )
     
     # Write output

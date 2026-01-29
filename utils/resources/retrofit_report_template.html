@@ -369,6 +369,165 @@
             color: #6b7280;
         }
 
+        /* Stream Commits Toggle */
+        .stream-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            margin-top: 16px;
+            margin-left: 20px;
+            background: rgba(212, 175, 55, 0.06);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .stream-toggle:hover {
+            background: rgba(212, 175, 55, 0.12);
+            border-color: rgba(212, 175, 55, 0.3);
+        }
+
+        .stream-toggle-text {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8b4513;
+        }
+
+        .stream-toggle-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #8b4513;
+            transition: transform 0.3s ease;
+        }
+
+        .stream-toggle.active .stream-toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        .stream-commits-container {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            margin-left: 20px;
+            margin-top: 0;
+        }
+
+        .stream-commits-container.active {
+            max-height: 2000px;
+            margin-top: 16px;
+        }
+
+        .stream-commits-list {
+            padding: 0;
+        }
+
+        .commit-card {
+            background: white;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .commit-card:last-child {
+            margin-bottom: 0;
+        }
+
+        .commit-card:hover {
+            border-color: rgba(212, 175, 55, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        .commit-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .commit-subject {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+            flex: 1;
+            margin-right: 12px;
+            line-height: 1.4;
+        }
+
+        .commit-hash {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: #d4af37;
+            text-decoration: none;
+            background: rgba(212, 175, 55, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            white-space: nowrap;
+            transition: all 0.2s;
+        }
+
+        .commit-hash:hover {
+            background: #d4af37;
+            color: white;
+        }
+
+        .commit-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .commit-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .commit-meta-label {
+            color: #999;
+        }
+
+        .commit-folders {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .folder-tag {
+            background: rgba(139, 69, 19, 0.08);
+            color: #8b4513;
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .folder-tag .count {
+            background: rgba(139, 69, 19, 0.15);
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-left: 4px;
+        }
+
+        .no-commits-inline {
+            padding: 16px 20px;
+            color: #999;
+            font-size: 13px;
+            font-style: italic;
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -539,6 +698,46 @@
                         <div class="stream-notice-text">The source and target branches are already aligned. No retrofit operation was performed.</div>
                     </div>
                     {% endif %}
+                    
+                    {% if stream.commits_count > 0 %}
+                    <div class="stream-toggle" onclick="toggleCommits(this)">
+                        <span class="stream-toggle-text">View Recent Commits to LQA ({{ stream.commits_count }})</span>
+                        <span class="stream-toggle-icon">&#9660;</span>
+                    </div>
+                    <div class="stream-commits-container">
+                        <div class="stream-commits-list">
+                            {% for commit in stream.commits %}
+                            <div class="commit-card">
+                                <div class="commit-header">
+                                    <span class="commit-subject">{{ commit.subject }}</span>
+                                    <a href="{{ commit.url }}" target="_blank" class="commit-hash">{{ commit.shortHash }}</a>
+                                </div>
+                                <div class="commit-meta">
+                                    <div class="commit-meta-item">
+                                        <span class="commit-meta-label">Author:</span>
+                                        <span>{{ commit.author }}</span>
+                                    </div>
+                                    <div class="commit-meta-item">
+                                        <span class="commit-meta-label">Date:</span>
+                                        <span>{{ commit.date }}</span>
+                                    </div>
+                                    <div class="commit-meta-item">
+                                        <span class="commit-meta-label">Files:</span>
+                                        <span>{{ commit.totalFiles }}</span>
+                                    </div>
+                                </div>
+                                {% if commit.folders %}
+                                <div class="commit-folders">
+                                    {% for folder in commit.folders %}
+                                    <span class="folder-tag">{{ folder.name }}<span class="count">{{ folder.count }}</span></span>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             </div>
@@ -549,5 +748,13 @@
             <p>Build <a href="{{ build_url }}">#{{ build_number }}</a></p>
         </footer>
     </div>
+
+    <script>
+        function toggleCommits(element) {
+            element.classList.toggle('active');
+            const container = element.nextElementSibling;
+            container.classList.toggle('active');
+        }
+    </script>
 </body>
 </html>

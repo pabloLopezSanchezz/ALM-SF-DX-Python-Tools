@@ -16,31 +16,49 @@ def calculate_statistics(streams_data):
     """Calculate statistics from streams data."""
     total_streams = len(streams_data)
     enabled_count = sum(1 for s in streams_data.values() if s['enabled'] == 'True')
+    
+    # Count streams with actual changes that succeeded
     success_count = sum(1 for s in streams_data.values() 
-                       if s['enabled'] == 'True' and s['result'] == 'Succeeded')
+                       if s['enabled'] == 'True' 
+                       and s['result'] == 'Succeeded'
+                       and s.get('hasChanges', 'true').lower() != 'false')
+    
     failed_count = sum(1 for s in streams_data.values() 
                       if s['enabled'] == 'True' and s['result'] == 'Failed')
-    skipped_count = sum(1 for s in streams_data.values() 
-                       if s['enabled'] == 'True' and s['result'] not in ['Succeeded', 'Failed'])
+    
+    # Count streams with no changes (hasChanges is 'false' or empty)
+    no_changes_count = sum(1 for s in streams_data.values() 
+                          if s['enabled'] == 'True' 
+                          and (s.get('hasChanges', '').lower() == 'false' or s.get('hasChanges', '') == ''))
+    
+    # Streams processed = enabled streams that had changes
+    processed_count = enabled_count - no_changes_count
     
     success_rate = 0
-    if enabled_count > 0:
-        success_rate = int((success_count * 100) / enabled_count)
+    if processed_count > 0:
+        success_rate = int((success_count * 100) / processed_count)
+    elif enabled_count > 0 and no_changes_count == enabled_count:
+        # All enabled streams had no changes - show 100%
+        success_rate = 100
     
     return {
         'total_streams': total_streams,
         'enabled_count': enabled_count,
         'success_count': success_count,
         'failed_count': failed_count,
-        'skipped_count': skipped_count,
+        'no_changes_count': no_changes_count,
+        'processed_count': processed_count,
         'success_rate': success_rate
     }
 
 
-def get_stream_status_class(result, enabled):
+def get_stream_status_class(result, enabled, has_changes):
     """Get CSS class for stream status."""
     if enabled != 'True':
         return 'disabled'
+    # Check if there were no changes (has_changes is 'false' string or empty)
+    elif has_changes.lower() == 'false' or has_changes == '':
+        return 'skipped'
     elif result == 'Succeeded':
         return 'success'
     elif result == 'Failed':
@@ -49,10 +67,13 @@ def get_stream_status_class(result, enabled):
         return 'skipped'
 
 
-def get_stream_badge(result, enabled):
+def get_stream_badge(result, enabled, has_changes):
     """Get badge text for stream status."""
     if enabled != 'True':
         return {'class': 'badge-disabled', 'text': 'DISABLED'}
+    # Check if there were no changes (has_changes is 'false' string or empty)
+    elif has_changes.lower() == 'false' or has_changes == '':
+        return {'class': 'badge-skipped', 'text': 'NO CHANGES'}
     elif result == 'Succeeded':
         return {'class': 'badge-success', 'text': 'SUCCESS'}
     elif result == 'Failed':
@@ -79,12 +100,14 @@ def main():
     # Prepare streams data
     streams_data = {}
     for stream_name, stream_info in config['streams'].items():
+        has_changes = stream_info.get('hasChanges', 'unknown')
         streams_data[stream_name] = {
             'name': stream_name,
             'result': stream_info['result'],
             'enabled': stream_info['enabled'],
-            'status_class': get_stream_status_class(stream_info['result'], stream_info['enabled']),
-            'badge': get_stream_badge(stream_info['result'], stream_info['enabled'])
+            'hasChanges': has_changes,
+            'status_class': get_stream_status_class(stream_info['result'], stream_info['enabled'], has_changes),
+            'badge': get_stream_badge(stream_info['result'], stream_info['enabled'], has_changes)
         }
     
     # Calculate statistics

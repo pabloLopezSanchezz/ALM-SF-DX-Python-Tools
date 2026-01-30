@@ -1,0 +1,55 @@
+{
+  "status": 0,
+  "result": {
+    "checkOnly": true,
+    "done": true,
+    "success": false,
+    "numberComponentErrors": 3,
+    "numberComponentsDeployed": 0,
+    "numberComponentsTotal": 10,
+    "numberTestErrors": 0,
+    "numberTestsCompleted": 2,
+    "numberTestsTotal": 2,
+    "details": {
+      "componentFailures": [
+        {
+          "fullName": "Account.CustomField__c",
+          "componentType": "CustomField",
+          "problem": "Field Account.RelatedField__c does not exist. Check spelling.",
+          "problemType": "Error",
+          "lineNumber": "125"
+        },
+        {
+          "fullName": "MGN_AccountService",
+          "componentType": "ApexClass",
+          "problem": "Variable does not exist: customSetting__c",
+          "problemType": "Error",
+          "lineNumber": "45"
+        },
+        {
+          "fullName": "Account-Account Layout",
+          "componentType": "Layout",
+          "problem": "In field: relatedList - no CustomField named Account.MissingField__c found",
+          "problemType": "Error"
+        }
+      ],
+      "runTestResult": {
+        "numTestsRun": 2,
+        "successes": [],
+        "failures": [],
+        "codeCoverage": [
+          {
+            "name": "MGN_AccountServiceTest",
+            "numLocations": 100,
+            "numLocationsNotCovered": 15
+          },
+          {
+            "name": "MGN_TriggerHandlerTest",
+            "numLocations": 50,
+            "numLocationsNotCovered": 5
+          }
+        ]
+      }
+    }
+  }
+}

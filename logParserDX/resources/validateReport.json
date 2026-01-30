@@ -1,0 +1,31 @@
+{
+    "CustomField": [
+        {
+            "Account.CustomField__c": {
+                "problem": "Field Account.RelatedField__c does not exist. Check spelling.",
+                "problemType": "Error",
+                "componentType": "CustomField",
+                "lineNumber": "125"
+            }
+        }
+    ],
+    "ApexClass": [
+        {
+            "MGN_AccountService": {
+                "problem": "Variable does not exist: customSetting__c",
+                "problemType": "Error",
+                "componentType": "ApexClass",
+                "lineNumber": "45"
+            }
+        }
+    ],
+    "Layout": [
+        {
+            "Account-Account Layout": {
+                "problem": "In field: relatedList - no CustomField named Account.MissingField__c found",
+                "problemType": "Error",
+                "componentType": "Layout"
+            }
+        }
+    ]
+}

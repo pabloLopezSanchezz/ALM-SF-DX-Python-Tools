@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Salesforce {{sfdx_operation}} Report</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
     <style>
@@ -23,7 +22,7 @@
         }
         
         body {
-            font-family: 'Montserrat', sans-serif;
+            font-family: Helvetica, Arial, sans-serif;
             background: linear-gradient(135deg, #F5F0E8 0%, #EDE5D8 50%, #E8DED0 100%);
             min-height: 100vh;
             color: var(--magnum-dark);
@@ -69,7 +68,7 @@
         }
         
         .hero-text h1 {
-            font-family: 'Playfair Display', serif;
+            font-family: Helvetica, Arial, sans-serif;
             font-size: 2.8rem;
             font-weight: 600;
             color: #FFFFFF;
@@ -143,7 +142,7 @@
         }
         
         .summary-card .value {
-            font-family: 'Playfair Display', serif;
+            font-family: Helvetica, Arial, sans-serif;
             font-size: 2.5rem;
             font-weight: 700;
             color: var(--magnum-chocolate);
@@ -159,7 +158,7 @@
         
         /* Section Title */
         .section-title {
-            font-family: 'Playfair Display', serif;
+            font-family: Helvetica, Arial, sans-serif;
             font-size: 1.8rem;
             font-weight: 600;
             color: var(--magnum-chocolate);
@@ -219,7 +218,7 @@
         }
         
         .accordion-title {
-            font-family: 'Playfair Display', serif;
+            font-family: Helvetica, Arial, sans-serif;
             font-size: 1.2rem;
             font-weight: 600;
             color: var(--magnum-chocolate);
@@ -233,7 +232,7 @@
             color: white;
             padding: 4px 12px;
             border-radius: 20px;
-            font-family: 'Montserrat', sans-serif;
+            font-family: Helvetica, Arial, sans-serif;
             font-size: 0.8rem;
             font-weight: 600;
         }
@@ -401,7 +400,7 @@
         }
         
         .success-title {
-            font-family: 'Playfair Display', serif;
+            font-family: Helvetica, Arial, sans-serif;
             font-size: 2rem;
             color: var(--magnum-chocolate);
             margin-bottom: 12px;
@@ -422,11 +421,11 @@
     </style>
 </head>
 <body>
-    <!-- Hero Section -->
+    <!-- Hero Section with Video -->
     <div class="hero">
-        <img src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=1920&q=80" 
-             alt="Magnum Ice Cream" 
-             class="hero-bg">
+        <video id="heroVideo" autoplay muted loop playsinline class="hero-bg">
+            <source src="https://assets.unileversolutions.com/v1/142224416.webm" type="video/webm">
+        </video>
         <div class="hero-overlay"></div>
         <div class="hero-content">
             <div class="hero-text">
@@ -612,6 +611,12 @@
             const firstAccordion = document.querySelector('.accordion-item .accordion-header');
             if (firstAccordion) {
                 toggleAccordion(firstAccordion);
+            }
+            
+            // Set video playback speed to 0.7
+            const heroVideo = document.getElementById('heroVideo');
+            if (heroVideo) {
+                heroVideo.playbackRate = 0.7;
             }
         });
     </script>

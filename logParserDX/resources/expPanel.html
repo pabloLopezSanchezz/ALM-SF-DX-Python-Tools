@@ -418,6 +418,35 @@
             color: #888;
             font-size: 0.85rem;
         }
+
+        .root-cause-banner {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            border: 1px solid transparent;
+            font-size: 0.95rem;
+        }
+
+        .root-cause-banner.error {
+            background: rgba(239, 68, 68, 0.1);
+            color: #7F1D1D;
+            border-color: rgba(239, 68, 68, 0.25);
+        }
+
+        .root-cause-banner.warning {
+            background: rgba(245, 158, 11, 0.12);
+            color: #92400E;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .root-cause-banner.success {
+            background: rgba(16, 185, 129, 0.12);
+            color: #065F46;
+            border-color: rgba(16, 185, 129, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -443,7 +472,12 @@
     </div>
 
     <div class="container">
-        {% if sfdx_status == 'Success' %}
+        <div class="root-cause-banner {{root_cause_level}}">
+            <strong>Root cause:</strong>
+            <span>{{root_cause_message}}</span>
+        </div>
+
+        {% if is_full_success %}
         <!-- Success State -->
         <div class="success-container">
             <div class="success-icon">
@@ -452,23 +486,31 @@
                 </svg>
             </div>
             <h2 class="success-title">{{sfdx_operation}} Successful</h2>
-            <p class="success-message">All components have been validated successfully with no errors.</p>
+            <p class="success-message">All components and test validations completed successfully.</p>
         </div>
         {% else %}
         <!-- Summary Cards -->
         <div class="summary-section">
             <div class="summary-card">
                 <div class="value">{{errorNumber}}</div>
-                <div class="label">Total Errors</div>
+                <div class="label">Component Errors</div>
             </div>
             <div class="summary-card">
                 <div class="value">{{componentDict|length}}</div>
                 <div class="label">Component Types</div>
             </div>
-            {% if testResultDict %}
             <div class="summary-card">
-                <div class="value">{{testResultDict|length}}</div>
-                <div class="label">Tests Executed</div>
+                <div class="value">{{testResultDict.summary.num_tests_run}}</div>
+                <div class="label">Tests Run</div>
+            </div>
+            <div class="summary-card">
+                <div class="value">{{testResultDict.summary.num_failures + testResultDict.coverage_warnings|length}}</div>
+                <div class="label">Test Issues</div>
+            </div>
+            {% if testResultDict.coverage_by_class %}
+            <div class="summary-card">
+                <div class="value">{{testResultDict.coverage_by_class|length}}</div>
+                <div class="label">Coverage Items</div>
             </div>
             {% endif %}
         </div>
@@ -476,7 +518,7 @@
         <!-- Section Title with Toggle -->
         <div class="section-title">
             <span>Component Errors</span>
-            {% if testResultDict %}
+            {% if testResultDict.coverage_by_class or testResultDict.failures or testResultDict.coverage_warnings %}
             <button id="switchButton" class="toggle-btn" onclick="switchView()">
                 Switch to Test Coverage
             </button>
@@ -485,6 +527,21 @@
 
         <!-- Component Errors Accordion -->
         <div id="componentErrors" class="accordion">
+            {% if not componentDict %}
+            <div class="accordion-item">
+                <div class="accordion-header" style="cursor: default;">
+                    <div class="accordion-title">
+                        <span>No component errors found</span>
+                        <span class="count">0 errors</span>
+                    </div>
+                </div>
+                <div class="accordion-content active">
+                    <div style="padding: 18px 0; color: #666;">
+                        Components validated successfully. Review test coverage and execution results for deployment blockers.
+                    </div>
+                </div>
+            </div>
+            {% endif %}
             {% for key, dataList in componentDict.items() %}
             <div class="accordion-item">
                 <div class="accordion-header" onclick="toggleAccordion(this)">
@@ -541,12 +598,87 @@
         </div>
 
         <!-- Test Coverage Section -->
-        {% if testResultDict %}
+        {% if testResultDict.coverage_by_class or testResultDict.failures or testResultDict.coverage_warnings %}
         <div id="testCoverage" class="test-coverage">
             <div class="section-title">
                 <span>Test Coverage</span>
             </div>
-            {% for test, coverage in testResultDict.items() %}
+            {% if testResultDict.summary.no_tests_executed %}
+            <div class="test-item">
+                <div class="test-name">No tests were executed</div>
+                <div style="color: #666; font-size: 0.9rem;">
+                    Tests are enabled but no tests were run. This can indicate missing test classes or a test execution configuration issue.
+                </div>
+            </div>
+            {% endif %}
+
+            {% if testResultDict.failures %}
+            <div class="accordion-item" style="margin-bottom: 20px;">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <div class="accordion-title">
+                        <span>Test Execution Failures</span>
+                        <span class="count">{{testResultDict.failures|length}} failures</span>
+                    </div>
+                    <svg class="accordion-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+                <div class="accordion-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Method</th>
+                                <th>Message</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for failure in testResultDict.failures %}
+                            <tr>
+                                <td class="component-name">{{failure.name}}</td>
+                                <td>{{failure.methodName if failure.methodName else '-'}}</td>
+                                <td class="error-message">{{failure.message}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if testResultDict.coverage_warnings %}
+            <div class="accordion-item" style="margin-bottom: 20px;">
+                <div class="accordion-header" onclick="toggleAccordion(this)">
+                    <div class="accordion-title">
+                        <span>Coverage Warnings</span>
+                        <span class="count">{{testResultDict.coverage_warnings|length}} warnings</span>
+                    </div>
+                    <svg class="accordion-chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </div>
+                <div class="accordion-content">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Component</th>
+                                <th>Warning</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for warning in testResultDict.coverage_warnings %}
+                            <tr>
+                                <td class="component-name">{{warning.name}}</td>
+                                <td class="error-message">{{warning.message}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% for test, coverage in testResultDict.coverage_by_class.items() %}
             <div class="test-item">
                 <div class="test-name">{{test}}</div>
                 <div class="progress-bar">

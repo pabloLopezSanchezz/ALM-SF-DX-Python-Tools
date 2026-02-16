@@ -8,22 +8,76 @@ JSON_FILE = 'validateReport.json'
 
 
 def generateTestDict(json_data):
-    """Generate dictionary with test coverage results"""
-    testResultDict = {}
+    """Generate structured dictionary with test execution and coverage results."""
+    result_data = json_data.get("result", {})
+    details_data = result_data.get("details", {})
+    run_test_result = details_data.get("runTestResult", {})
 
-    if json_data['result']['numberTestsTotal'] != 0:
-        try:
-            testResultList = json_data['result']['details']['runTestResult']['codeCoverage']
-            for test in testResultList:
-                testCoverage = getTestCoverage(test['numLocations'], test['numLocationsNotCovered'])
-                testResultDict[test['name']] = testCoverage
-            return testResultDict
-        except KeyError as e:
-            print(f"No Key {e} in validate.json")
-            print(f"[TEST ERRORS - MAY BE ERRORS ON TEST EXECUTION]")
-            return {}
-    else:
-        return testResultDict
+    coverage_by_class = {}
+    for test in _as_list(run_test_result.get("codeCoverage", [])):
+        test_name = test.get("name")
+        if not test_name:
+            continue
+        test_coverage = getTestCoverage(
+            test.get("numLocations", 0),
+            test.get("numLocationsNotCovered", 0),
+        )
+        coverage_by_class[test_name] = test_coverage
+
+    failures = []
+    for failure in _as_list(run_test_result.get("failures", [])):
+        failures.append(
+            {
+                "name": failure.get("name", "Unknown"),
+                "methodName": failure.get("methodName", ""),
+                "message": failure.get("message", "No message"),
+                "stackTrace": failure.get("stackTrace", ""),
+            }
+        )
+
+    coverage_warnings = []
+    for warning in _as_list(run_test_result.get("codeCoverageWarnings", [])):
+        coverage_warnings.append(
+            {
+                "name": warning.get("name", "Unknown"),
+                "message": warning.get("message", "No message"),
+            }
+        )
+
+    flow_coverage_warnings = []
+    for warning in _as_list(run_test_result.get("flowCoverageWarnings", [])):
+        flow_coverage_warnings.append(
+            {
+                "name": warning.get("name", "Unknown"),
+                "message": warning.get("message", "No message"),
+            }
+        )
+
+    num_tests_run = int(run_test_result.get("numTestsRun", 0))
+    num_failures = int(run_test_result.get("numFailures", len(failures)))
+    num_tests_total = int(result_data.get("numberTestsTotal", 0))
+    tests_enabled = bool(result_data.get("runTestsEnabled", False))
+
+    has_issues = (
+        num_failures > 0
+        or len(coverage_warnings) > 0
+        or len(flow_coverage_warnings) > 0
+    )
+
+    return {
+        "coverage_by_class": coverage_by_class,
+        "failures": failures,
+        "coverage_warnings": coverage_warnings,
+        "flow_coverage_warnings": flow_coverage_warnings,
+        "summary": {
+            "num_tests_run": num_tests_run,
+            "num_failures": num_failures,
+            "num_tests_total": num_tests_total,
+            "tests_enabled": tests_enabled,
+            "no_tests_executed": tests_enabled and num_tests_run == 0 and num_tests_total == 0,
+            "has_issues": has_issues,
+        },
+    }
 
 
 def getTestCoverage(totalLines, linesNotCovered):
@@ -45,15 +99,23 @@ def generateComponentDict(input_path):
     with open(f'{input_path}') as json_file:
         json_data = json.load(json_file)
         try:
-            sfdx_operation = "Validate" if json_data['result']['checkOnly'] else "Deploy"
-            sfdx_status = "Error" if 'componentFailures' in json_data['result']['details'].keys() else "Success"
+            result_data = json_data["result"]
+            details_data = result_data.get("details", {})
+            sfdx_operation = "Validate" if result_data["checkOnly"] else "Deploy"
+            componentFailure = _as_list(details_data.get("componentFailures", []))
+            result_status = str(result_data.get("status", "")).lower()
+            result_success = bool(result_data.get("success", True))
+            has_component_failures = len(componentFailure) > 0
+            sfdx_status = (
+                "Error"
+                if (not result_success or result_status in {"failed", "error", "canceled"} or has_component_failures)
+                else "Success"
+            )
         except KeyError as e:
             print(f"[ERROR] Value {e} did not find on {input_path}. Check validate.json.")
             exit(1)
             
-        if "Error" == sfdx_status:
-            componentFailure = json_data['result']['details']['componentFailures']
-
+        if componentFailure:
             for index in range(len(componentFailure)):
                 if componentFailure[index]['componentType'] in componentDict:
                     componentDict[componentFailure[index]['componentType']].append(
@@ -110,3 +172,12 @@ def generateFailureDict(componentFailure, index):
 
     dictDataComponent[componentFailure[index]['fullName']] = dictDataAuxComponent
     return dictDataComponent
+
+
+def _as_list(value):
+    """Normalize scalar/object/list values to a list."""
+    if value is None:
+        return []
+    if isinstance(value, list):
+        return value
+    return [value]

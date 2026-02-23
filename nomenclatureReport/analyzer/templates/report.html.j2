@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nomenclature Report — Magnum</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      :root {
+        --magnum-gold: #d4aa00;
+        --magnum-brown: #805100;
+        --magnum-cream: #fff6e6;
+        --magnum-light: #f5f3ef;
+        --magnum-dark: #141613;
+        --magnum-accent: #f78154;
+      }
+      * {
+        font-family: 'GT Pressura', 'Inter', system-ui, sans-serif;
+        font-weight: 400;
+        font-style: normal;
+      }
+      body {
+        background: var(--magnum-light);
+        color: var(--magnum-dark);
+      }
+      .hero-section {
+        background: url('https://assets.unileversolutions.com/v1/114042683.png?im=AspectCrop=(1112,271);Resize=(1112,271)');
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+      .hero-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to bottom, transparent 0%, transparent 40%, rgba(212, 170, 0, 0.3) 70%, rgba(245, 243, 239, 0.9) 100%);
+        pointer-events: none;
+      }
+      .glass {
+        background: rgba(255, 255, 255, 0.12);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .hero-stat {
+        background: rgba(20, 22, 19, 0.38);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+      }
+      .hero-stat-value {
+        font-weight: 600;
+        text-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+      }
+      .hero-stat-label {
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+      }
+      .glass-dark {
+        background: rgba(20, 22, 19, 0.6);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .stat-card {
+        background: white;
+        border: 1px solid rgba(212, 170, 0, 0.15);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(128, 81, 0, 0.12);
+        border-color: var(--magnum-gold);
+      }
+      .section-glass {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(212, 170, 0, 0.1);
+      }
+      .accordion-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .accordion-content.open {
+        max-height: 2000px;
+      }
+      .accordion-trigger {
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+      .accordion-trigger:hover {
+        background: rgba(212, 170, 0, 0.08);
+      }
+      .accordion-icon {
+        transition: transform 0.3s ease;
+      }
+      .accordion-trigger.open .accordion-icon {
+        transform: rotate(180deg);
+      }
+      .issue-row {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .issue-row:hover {
+        background: rgba(212, 170, 0, 0.06);
+      }
+      .issue-detail {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+      }
+      .issue-detail.open {
+        max-height: 300px;
+      }
+      .filter-chip {
+        transition: all 0.2s ease;
+        cursor: pointer;
+      }
+      .filter-chip:hover {
+        background: var(--magnum-gold);
+        color: white;
+      }
+      .filter-chip.active {
+        background: var(--magnum-gold);
+        color: white;
+      }
+      .progress-bar {
+        background: linear-gradient(90deg, var(--magnum-gold) 0%, var(--magnum-brown) 100%);
+        transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .fade-in {
+        animation: fadeIn 0.5s ease forwards;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .tab-btn {
+        position: relative;
+        transition: all 0.3s ease;
+      }
+      .tab-btn::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: var(--magnum-gold);
+        transition: width 0.3s ease;
+      }
+      .tab-btn.active::after,
+      .tab-btn:hover::after {
+        width: 100%;
+      }
+      .tab-btn.active {
+        color: var(--magnum-gold);
+      }
+      .donut-chart {
+        transform: rotate(-90deg);
+      }
+      .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(212, 170, 0, 0.2);
+      }
+      .component-drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(20, 22, 19, 0.45);
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+        z-index: 80;
+      }
+      .component-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: min(460px, 92vw);
+        background: rgba(255, 255, 255, 0.95);
+        border-left: 1px solid rgba(212, 170, 0, 0.2);
+        box-shadow: -20px 0 50px rgba(20, 22, 19, 0.25);
+        transform: translateX(100%);
+        transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+        z-index: 90;
+      }
+      .component-drawer.open {
+        transform: translateX(0);
+      }
+      .component-drawer-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .kpi-clickable {
+        cursor: pointer;
+      }
+      .kpi-clickable:hover {
+        border-color: rgba(255, 255, 255, 0.45);
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body class="antialiased">
+
+    <!-- HERO FULL WIDTH -->
+    <header class="hero-section relative min-h-[380px] flex flex-col">
+      
+      <!-- Top bar -->
+      <div class="relative z-10 flex items-center justify-between px-8 py-6">
+        <img 
+          src="https://upload.wikimedia.org/wikipedia/commons/8/87/Magnum_logo.svg" 
+          alt="Magnum" 
+          class="h-10 brightness-0 invert"
+        />
+        <div class="glass-dark rounded-full px-5 py-2 text-sm text-white/90">
+          {{ generated_at }}
+        </div>
+      </div>
+
+      <!-- Hero content -->
+      <div class="relative z-10 flex-1 flex flex-col justify-center px-8 pb-16 max-w-7xl mx-auto w-full">
+        <p class="text-white/70 text-sm uppercase tracking-[0.35em] mb-3">Salesforce DX</p>
+        <h1 class="text-5xl md:text-6xl font-semibold text-white tracking-tight leading-tight">
+          Nomenclature<br/>Report
+        </h1>
+        <p class="mt-4 text-white/80 text-lg max-w-xl">
+          Naming convention and documentation analysis focused on governance, quality, and consistency.
+        </p>
+        
+        <!-- Quick stats in hero -->
+        <div class="mt-8 flex flex-wrap gap-4">
+          <div class="hero-stat rounded-2xl px-6 py-4 text-white">
+            <p class="hero-stat-value text-3xl">{{ total_issues }}</p>
+            <p class="hero-stat-label text-sm text-white/85 mt-1">Total Issues</p>
+          </div>
+          <div class="hero-stat rounded-2xl px-6 py-4 text-white">
+            <p class="hero-stat-value text-3xl text-[var(--magnum-accent)]">{{ error_count }}</p>
+            <p class="hero-stat-label text-sm text-white/85 mt-1">Errors</p>
+          </div>
+          <div class="hero-stat rounded-2xl px-6 py-4 text-white">
+            <p class="hero-stat-value text-3xl">{{ warning_count }}</p>
+            <p class="hero-stat-label text-sm text-white/85 mt-1">Warnings</p>
+          </div>
+          <div class="hero-stat rounded-2xl px-6 py-4 text-white">
+            <p class="hero-stat-value text-3xl">{{ pending_review_count }}</p>
+            <p class="hero-stat-label text-sm text-white/85 mt-1">Pending Review</p>
+          </div>
+          <div id="openComponentBreakdown" class="hero-stat kpi-clickable rounded-2xl px-6 py-4 text-white" title="Open component breakdown">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="hero-stat-value text-3xl">{{ total_components_analyzed }}</p>
+                <p class="hero-stat-label text-sm text-white/85 mt-1">Total Components Analyzed</p>
+              </div>
+              <svg class="w-5 h-5 text-white/80 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- COMPONENT BREAKDOWN DRAWER -->
+    <div id="componentDrawerOverlay" class="component-drawer-overlay"></div>
+    <aside id="componentDrawer" class="component-drawer">
+      <div class="h-full flex flex-col">
+        <div class="px-6 py-5 border-b border-[var(--magnum-gold)]/15 flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-semibold text-[var(--magnum-dark)]">Component Breakdown</h3>
+            <p class="text-sm text-[var(--magnum-dark)]/60 mt-1">Total analyzed: {{ total_components_analyzed }}</p>
+          </div>
+          <button id="closeComponentDrawer" class="p-2 rounded-lg hover:bg-[var(--magnum-gold)]/10" aria-label="Close">
+            <svg class="w-5 h-5 text-[var(--magnum-dark)]/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+          </button>
+        </div>
+        <div class="px-6 py-4 overflow-auto">
+          <div class="space-y-3">
+            {% for component_type, count in component_counts.items() %}
+            <div class="rounded-xl border border-[var(--magnum-gold)]/15 bg-white px-4 py-3">
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-sm font-medium text-[var(--magnum-dark)]">{{ component_type }}</p>
+                <span class="text-sm font-semibold text-[var(--magnum-brown)]">{{ count }}</span>
+              </div>
+              <div class="h-1.5 rounded-full bg-[var(--magnum-dark)]/8 overflow-hidden">
+                <div class="progress-bar h-full" style="width: {{ ((count / (total_components_analyzed or 1)) * 100) | round(1) }}%;"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- METADATA BAR -->
+    <div class="bg-white border-b border-[var(--magnum-gold)]/10 sticky top-0 z-40">
+      <div class="max-w-7xl mx-auto px-8 py-3 flex flex-wrap items-center gap-6 text-sm text-[var(--magnum-dark)]/70">
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-[var(--magnum-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+          </svg>
+          <span class="truncate max-w-xs" title="{{ project_path }}">{{ project_path | truncate(50) }}</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <svg class="w-4 h-4 text-[var(--magnum-gold)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+          <span class="truncate max-w-xs" title="{{ rules_path }}">{{ rules_path | truncate(50) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-8 py-12">
+
+      <!-- OVERVIEW SECTION -->
+      <section class="mb-16">
+        <div class="flex items-center justify-between mb-8">
+          <div>
+            <h2 class="text-2xl font-semibold text-[var(--magnum-dark)]">Overview</h2>
+            <p class="text-[var(--magnum-dark)]/60 mt-1">Visual summary of the analysis</p>
+          </div>
+          <div class="flex gap-2">
+            <button class="tab-btn active px-4 py-2 text-sm" data-tab="severity">Severity</button>
+            <button class="tab-btn px-4 py-2 text-sm" data-tab="components">Components</button>
+            <button class="tab-btn px-4 py-2 text-sm" data-tab="rules">Rules</button>
+          </div>
+        </div>
+
+        <!-- Tab: Severity -->
+        <div id="tab-severity" class="tab-content grid md:grid-cols-2 gap-8">
+          <div class="section-glass rounded-3xl p-8">
+            <h3 class="text-sm uppercase tracking-widest text-[var(--magnum-gold)] mb-6">Severity Distribution</h3>
+            <div class="flex items-center justify-center gap-12">
+              <div class="relative w-48 h-48">
+                <svg viewBox="0 0 42 42" class="w-48 h-48 donut-chart">
+                  <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="rgba(20,22,19,0.08)" stroke-width="6"/>
+                  {% set total = severity_data | sum(attribute='value') or 1 %}
+                  {% set offset = 25 %}
+                  {% for item in severity_data %}
+                  {% set pct = (item.value / total * 100) %}
+                  <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="{{ item.color }}" stroke-width="6" 
+                    stroke-dasharray="{{ pct }} {{ 100 - pct }}" stroke-dashoffset="{{ offset }}" stroke-linecap="round"/>
+                  {% set offset = offset - pct %}
+                  {% endfor %}
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span class="text-4xl font-semibold text-[var(--magnum-dark)]">{{ total_issues }}</span>
+                  <span class="text-xs text-[var(--magnum-dark)]/50 uppercase tracking-wider">Total</span>
+                </div>
+              </div>
+              <div class="space-y-4">
+                {% for item in severity_data %}
+                <div class="flex items-center gap-4">
+                  <div class="w-4 h-4 rounded-full" style="background: {{ item.color }};"></div>
+                  <div>
+                    <p class="text-sm font-medium text-[var(--magnum-dark)]">{{ item.label }}</p>
+                    <p class="text-2xl font-semibold text-[var(--magnum-dark)]">{{ item.value }}</p>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+
+          <div class="section-glass rounded-3xl p-8">
+            <h3 class="text-sm uppercase tracking-widest text-[var(--magnum-gold)] mb-6">Top Rules Violated</h3>
+            <div class="space-y-4">
+              {% for item in top_rules_data[:5] %}
+              <div class="group">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-[var(--magnum-dark)] truncate">{{ item.title }}</p>
+                    <p class="text-xs text-[var(--magnum-dark)]/50">{{ item.label }}</p>
+                  </div>
+                  <span class="ml-4 text-lg font-semibold text-[var(--magnum-gold)]">{{ item.value }}</span>
+                </div>
+                <div class="h-2 bg-[var(--magnum-dark)]/5 rounded-full overflow-hidden">
+                  <div class="progress-bar h-full rounded-full" style="width: {{ (item.value / (top_rules_data[0].value or 1) * 100) | int }}%;"></div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Components -->
+        <div id="tab-components" class="tab-content hidden">
+          <div class="section-glass rounded-3xl p-8">
+            <h3 class="text-sm uppercase tracking-widest text-[var(--magnum-gold)] mb-6">Component Coverage</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {% for component_type, count in component_counts.items() %}
+              <div class="stat-card rounded-2xl p-5 text-center">
+                <p class="text-3xl font-semibold text-[var(--magnum-dark)]">{{ count }}</p>
+                <p class="text-sm text-[var(--magnum-dark)]/60 mt-1">{{ component_type }}</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Rules -->
+        <div id="tab-rules" class="tab-content hidden">
+          <div class="section-glass rounded-3xl p-8">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-sm uppercase tracking-widest text-[var(--magnum-gold)]">All Rules (with hit count)</h3>
+              <p class="text-xs text-[var(--magnum-dark)]/60">
+                {{ rule_stats | length }} total rules
+              </p>
+            </div>
+            <div class="space-y-3">
+              {% for rule in rule_stats %}
+              <div class="accordion-trigger flex items-center justify-between p-4 rounded-xl hover:bg-[var(--magnum-gold)]/5" data-accordion="rule-{{ loop.index }}">
+                <div class="flex-1">
+                  <p class="font-medium text-[var(--magnum-dark)]">{{ rule.title }}</p>
+                  <p class="text-xs text-[var(--magnum-dark)]/50 mt-1">{{ rule.rule_id }} · {{ rule.severity }}</p>
+                </div>
+                <div class="flex items-center gap-4">
+                  <span class="text-lg font-semibold {% if rule.triggered %}text-[var(--magnum-gold)]{% else %}text-[var(--magnum-dark)]/35{% endif %}">{{ rule.count }}</span>
+                  <svg class="accordion-icon w-5 h-5 text-[var(--magnum-dark)]/40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="accordion-content" id="rule-{{ loop.index }}">
+                <div class="px-4 pb-4 text-sm text-[var(--magnum-dark)]/70">
+                  {{ rule.description if rule.description else "No description available." }}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {% if missing_rule_ids %}
+      <!-- MISSING RULES -->
+      <section class="mb-16">
+        <div class="bg-gradient-to-r from-[var(--magnum-accent)]/10 to-transparent rounded-3xl p-8 border border-[var(--magnum-accent)]/20">
+          <h3 class="text-lg font-semibold text-[var(--magnum-dark)] mb-2">Missing Rule Implementations</h3>
+          <p class="text-sm text-[var(--magnum-dark)]/60 mb-4">These rules exist in rules.json but are not yet implemented.</p>
+          <div class="flex flex-wrap gap-2">
+            {% for rule_id in missing_rule_ids %}
+            <span class="px-3 py-1 text-xs rounded-full bg-[var(--magnum-accent)]/20 text-[var(--magnum-accent)] border border-[var(--magnum-accent)]/30">
+              {{ rule_id }}
+            </span>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- ISSUE EXPLORER -->
+      <section>
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div>
+            <h2 class="text-2xl font-semibold text-[var(--magnum-dark)]">Issue Explorer</h2>
+            <p class="text-[var(--magnum-dark)]/60 mt-1">Filter and explore all findings</p>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="section-glass rounded-2xl p-6 mb-6">
+          <div class="flex flex-col lg:flex-row gap-4">
+            <div class="flex-1">
+              <input 
+                id="searchInput" 
+                type="text" 
+                placeholder="Search by component, rule or message..."
+                class="search-input w-full px-5 py-3 rounded-xl border border-[var(--magnum-gold)]/20 bg-white text-[var(--magnum-dark)] placeholder:text-[var(--magnum-dark)]/40 focus:outline-none focus:border-[var(--magnum-gold)]"
+              />
+            </div>
+            <div class="flex flex-wrap items-center gap-3">
+              <span class="text-sm text-[var(--magnum-dark)]/60">Severity:</span>
+              <button class="filter-chip active px-4 py-2 rounded-full border border-[var(--magnum-gold)]/30 text-sm" data-filter="severity" data-value="ALL">All</button>
+              <button class="filter-chip px-4 py-2 rounded-full border border-[var(--magnum-gold)]/30 text-sm" data-filter="severity" data-value="ERROR">Errors</button>
+              <button class="filter-chip px-4 py-2 rounded-full border border-[var(--magnum-gold)]/30 text-sm" data-filter="severity" data-value="WARNING">Warnings</button>
+            </div>
+            <div class="flex items-center gap-3">
+              <select 
+                id="componentSelect"
+                class="px-4 py-3 rounded-xl border border-[var(--magnum-gold)]/20 bg-white text-sm text-[var(--magnum-dark)] focus:outline-none focus:border-[var(--magnum-gold)]"
+              >
+                <option value="ALL">All Components</option>
+                {% for component_type in component_counts.keys() %}
+                <option value="{{ component_type }}">{{ component_type }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <label class="flex items-center gap-2 text-sm text-[var(--magnum-dark)]/70 cursor-pointer">
+              <input id="pendingOnly" type="checkbox" class="w-4 h-4 accent-[var(--magnum-gold)]" />
+              Pending review only
+            </label>
+          </div>
+        </div>
+
+        <!-- Issues List -->
+        <div class="section-glass rounded-3xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead class="bg-[var(--magnum-gold)]/10 text-xs uppercase tracking-wider text-[var(--magnum-gold)]">
+                <tr>
+                  <th class="px-6 py-4 text-left font-medium">Severity</th>
+                  <th class="px-6 py-4 text-left font-medium">Rule</th>
+                  <th class="px-6 py-4 text-left font-medium">Component</th>
+                  <th class="px-6 py-4 text-left font-medium">Type</th>
+                  <th class="px-6 py-4 text-left font-medium">Message</th>
+                </tr>
+              </thead>
+              <tbody id="issuesTable" class="divide-y divide-[var(--magnum-gold)]/10">
+                {% for issue in issues %}
+                <tr 
+                  class="issue-row"
+                  data-severity="{{ issue.severity }}"
+                  data-component="{{ issue.component_type }}"
+                  data-pending="{{ 'true' if issue.pending_review else 'false' }}"
+                  data-search="{{ (issue.rule_id ~ ' ' ~ issue.component_name ~ ' ' ~ issue.component_type ~ ' ' ~ issue.message ~ ' ' ~ issue.component_path)|lower }}"
+                  data-issue-id="{{ loop.index }}"
+                >
+                  <td class="px-6 py-4">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                      {% if issue.severity == 'ERROR' %}bg-[var(--magnum-accent)] text-white{% else %}bg-[var(--magnum-gold)]/20 text-[var(--magnum-brown)]{% endif %}">
+                      {{ issue.severity }}
+                    </span>
+                    {% if issue.pending_review %}
+                    <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] uppercase tracking-wider bg-[var(--magnum-dark)] text-white">
+                      Review
+                    </span>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-4">
+                    <p class="font-medium text-[var(--magnum-dark)]">{{ rule_catalog.get(issue.rule_id, {}).get("rule", issue.rule_id) | truncate(40) }}</p>
+                    <p class="text-xs text-[var(--magnum-dark)]/50">{{ issue.rule_id }}</p>
+                  </td>
+                  <td class="px-6 py-4 text-[var(--magnum-dark)]">{{ issue.component_name }}</td>
+                  <td class="px-6 py-4 text-[var(--magnum-dark)]/70">{{ issue.component_type }}</td>
+                  <td class="px-6 py-4 text-[var(--magnum-dark)]/70">{{ issue.message | truncate(60) }}</td>
+                </tr>
+                <tr class="issue-detail-row" id="detail-{{ loop.index }}">
+                  <td colspan="5" class="px-6 py-0">
+                    <div class="issue-detail">
+                      <div class="py-4 pl-4 border-l-2 border-[var(--magnum-gold)] ml-2 text-sm">
+                        <p class="text-[var(--magnum-dark)]/60 mb-2"><strong>Full message:</strong> {{ issue.message }}</p>
+                        <p class="text-[var(--magnum-dark)]/60 mb-2"><strong>Path:</strong> <code class="bg-[var(--magnum-dark)]/5 px-2 py-0.5 rounded text-xs">{{ issue.component_path }}</code></p>
+                        <p class="text-[var(--magnum-dark)]/60"><strong>Rule description:</strong> {{ rule_catalog.get(issue.rule_id, {}).get("description", "N/A") }}</p>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% if not issues %}
+                <tr>
+                  <td colspan="5" class="px-6 py-12 text-center text-[var(--magnum-dark)]/50">
+                    <svg class="w-12 h-12 mx-auto mb-4 text-[var(--magnum-gold)]/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <p class="text-lg font-medium">No issues found!</p>
+                    <p class="text-sm">Your nomenclature is in great shape.</p>
+                  </td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Results count -->
+        <div class="mt-4 text-sm text-[var(--magnum-dark)]/50">
+          <span id="resultsCount">{{ issues | length }}</span> issues found
+        </div>
+      </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-[var(--magnum-gold)]/10 py-8 mt-16">
+      <div class="max-w-7xl mx-auto px-8 flex items-center justify-between text-sm text-[var(--magnum-dark)]/50">
+        <div class="flex items-center gap-3">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/8/87/Magnum_logo.svg" alt="Magnum" class="h-6 opacity-40"/>
+          <span>Nomenclature Report</span>
+        </div>
+        <span>{{ generated_at }}</span>
+      </div>
+    </footer>
+
+    <script>
+      // Data
+      const severityData = {{ severity_data | tojson }};
+      const topRulesData = {{ top_rules_data | tojson }};
+
+      // Elements
+      const searchInput = document.getElementById("searchInput");
+      const componentSelect = document.getElementById("componentSelect");
+      const pendingOnly = document.getElementById("pendingOnly");
+      const rows = Array.from(document.querySelectorAll(".issue-row"));
+      const resultsCount = document.getElementById("resultsCount");
+      const openComponentBreakdown = document.getElementById("openComponentBreakdown");
+      const componentDrawer = document.getElementById("componentDrawer");
+      const componentDrawerOverlay = document.getElementById("componentDrawerOverlay");
+      const closeComponentDrawer = document.getElementById("closeComponentDrawer");
+
+      let activeSeverity = "ALL";
+
+      // Filters
+      function applyFilters() {
+        const search = searchInput.value.toLowerCase();
+        const componentFilter = componentSelect.value;
+        const pendingFilter = pendingOnly.checked;
+        let visibleCount = 0;
+
+        rows.forEach((row) => {
+          const severity = row.dataset.severity;
+          const component = row.dataset.component;
+          const pending = row.dataset.pending === "true";
+          const haystack = row.dataset.search || "";
+          const detailRow = document.getElementById("detail-" + row.dataset.issueId);
+
+          const matchesSeverity = activeSeverity === "ALL" || activeSeverity === severity;
+          const matchesComponent = componentFilter === "ALL" || componentFilter === component;
+          const matchesPending = !pendingFilter || pending;
+          const matchesSearch = haystack.includes(search);
+
+          const visible = matchesSeverity && matchesComponent && matchesPending && matchesSearch;
+          row.classList.toggle("hidden", !visible);
+          if (detailRow) detailRow.classList.toggle("hidden", !visible);
+          if (visible) visibleCount++;
+        });
+
+        resultsCount.textContent = visibleCount;
+      }
+
+      searchInput.addEventListener("input", applyFilters);
+      componentSelect.addEventListener("change", applyFilters);
+      pendingOnly.addEventListener("change", applyFilters);
+
+      // Severity filter chips
+      document.querySelectorAll("[data-filter='severity']").forEach(chip => {
+        chip.addEventListener("click", () => {
+          document.querySelectorAll("[data-filter='severity']").forEach(c => c.classList.remove("active"));
+          chip.classList.add("active");
+          activeSeverity = chip.dataset.value;
+          applyFilters();
+        });
+      });
+
+      // Tabs
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          
+          document.querySelectorAll(".tab-content").forEach(content => content.classList.add("hidden"));
+          document.getElementById("tab-" + btn.dataset.tab).classList.remove("hidden");
+        });
+      });
+
+      // Accordions
+      document.querySelectorAll(".accordion-trigger").forEach(trigger => {
+        trigger.addEventListener("click", () => {
+          const target = document.getElementById(trigger.dataset.accordion);
+          trigger.classList.toggle("open");
+          target.classList.toggle("open");
+        });
+      });
+
+      // Issue row expand
+      rows.forEach(row => {
+        row.addEventListener("click", () => {
+          const detailRow = document.getElementById("detail-" + row.dataset.issueId);
+          if (detailRow) {
+            const detail = detailRow.querySelector(".issue-detail");
+            detail.classList.toggle("open");
+          }
+        });
+      });
+
+      // Component breakdown drawer
+      function openDrawer() {
+        componentDrawer.classList.add("open");
+        componentDrawerOverlay.classList.add("open");
+      }
+
+      function closeDrawer() {
+        componentDrawer.classList.remove("open");
+        componentDrawerOverlay.classList.remove("open");
+      }
+
+      if (openComponentBreakdown) {
+        openComponentBreakdown.addEventListener("click", openDrawer);
+      }
+      if (closeComponentDrawer) {
+        closeComponentDrawer.addEventListener("click", closeDrawer);
+      }
+      if (componentDrawerOverlay) {
+        componentDrawerOverlay.addEventListener("click", closeDrawer);
+      }
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeDrawer();
+        }
+      });
+    </script>
+  </body>
+</html>

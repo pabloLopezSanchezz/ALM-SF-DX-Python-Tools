@@ -1,0 +1,248 @@
+[
+    {
+      "ruleId": "SF-NAME-001",
+      "component_type": "CustomField",
+      "rule": "Custom field API name format",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "Custom field API names must be composed of one or more Title Case tokens optionally separated by underscores and must end with __c. Single-token names without underscores are valid.",
+      "example": "Valid: Acuerdo__c, Acuerdo_Marco__c | Invalid: isvalidtext__c"
+    },
+    {
+      "ruleId": "SF-NAME-002",
+      "component_type": "CustomField",
+      "rule": "Disallow technical type prefixes",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "Field API names must not start with technical prefixes such as txt_, str_, num_, int_, dec_, dt_, dtm_, cb_, bln_, pl_, fx_.",
+      "example": "Invalid: txt_Name__c | Valid: Name__c"
+    },
+    {
+      "ruleId": "SF-DOC-001",
+      "component_type": "CustomField",
+      "rule": "Field description is mandatory",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "Field metadata must contain a non-empty <description> element.",
+      "example": "<description>Customer Number.</description>"
+    },
+    {
+      "ruleId": "SF-DOC-002",
+      "component_type": "CustomField",
+      "rule": "Field inline help text is mandatory",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "Field metadata must contain a non-empty <inlineHelpText> element.",
+      "example": "<inlineHelpText>Unique identifier provided by ERP.</inlineHelpText>"
+    },
+    {
+      "ruleId": "SF-NAME-003",
+      "component_type": "CustomField",
+      "rule": "Internal CamelCase inside token",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "If a token contains internal CamelCase (e.g., IsValidText__c), it may represent multiple words not separated by underscores. Word boundaries cannot be proven without a dictionary.",
+      "example": "Warn: IsValidText__c (prefer Is_Valid_Text__c if multi-word)"
+    },
+    {
+      "ruleId": "SF-BOOL-001",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type": "Checkbox"
+      },
+      "rule": "Boolean prefix enforcement",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "If field type is Checkbox, the API name must start with Is_ or Has_.",
+      "example": "Valid: Is_Active__c, Has_Consent__c | Invalid: Active__c"
+    },
+    {
+      "ruleId": "SF-DATE-001",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type": "Date"
+      },
+      "rule": "Date suffix enforcement",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "If field type is Date, the API name must end with _Date__c.",
+      "example": "First_Purchase_Date__c"
+    },
+    {
+      "ruleId": "SF-DATE-002",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type": "DateTime"
+      },
+      "rule": "DateTime suffix enforcement",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "If field type is DateTime, the API name must end with _At__c.",
+      "example": "Submitted_At__c"
+    },
+    {
+      "ruleId": "SF-DATE-003",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type": "Time"
+      },
+      "rule": "Time-of-day suffix enforcement",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "If field type is Time, the API name must end with _Time__c.",
+      "example": "Cutoff_Time__c"
+    },
+    {
+      "ruleId": "SF-NUM-001",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type": "Currency"
+      },
+      "rule": "Currency semantic suffix",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "If field type is Currency, API name is expected to end with _Amount__c according to semantic convention.",
+      "example": "Prefer: Order_Amount__c"
+    },
+    {
+      "ruleId": "SF-NUM-002",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type": "Percent"
+      },
+      "rule": "Percent semantic suffix",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "If field type is Percent, API name is expected to end with _Pct__c according to semantic convention.",
+      "example": "Prefer: Discount_Pct__c"
+    },
+    {
+      "ruleId": "SF-NUM-003",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type": "Number"
+      },
+      "rule": "Count semantic suffix",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "Numeric fields that represent counts should end with _Count__c. Intent cannot be inferred without tagging or dictionary.",
+      "example": "Prefer: Failed_Attempts_Count__c"
+    },
+    {
+      "ruleId": "SF-ID-001",
+      "component_type": "CustomField",
+      "applies_when": {
+        "external_id": true
+      },
+      "rule": "External ID naming",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "If a field is marked as External ID (<externalId>true</externalId>), the API name must end with _Ext_Id__c.",
+      "example": "SAP_Order_Ext_Id__c"
+    },
+    {
+      "ruleId": "SF-ID-002",
+      "component_type": "CustomField",
+      "applies_when": {
+        "external_id": true
+      },
+      "rule": "External ID uniqueness recommended",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "External ID fields are recommended to be unique, but this depends on integration design.",
+      "example": "Prefer: <unique>true</unique>"
+    },
+    {
+      "ruleId": "SF-REL-001",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type_in": [
+          "Lookup",
+          "MasterDetail"
+        ]
+      },
+      "rule": "Role-based lookup naming",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "Lookup fields should be named by business role rather than generic object name. This cannot be validated without business context.",
+      "example": "Prefer: Billing_Account__c over Account__c"
+    },
+    {
+      "ruleId": "SF-PL-001",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type_in": [
+          "Picklist",
+          "MultiselectPicklist"
+        ]
+      },
+      "rule": "Picklist value source resolvable",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "Picklist fields must have their value source resolvable as one of: inline values (<valueSetDefinition>), referenced value set (<valueSetName>), or StandardValueSet resolved from the StandardValueSets folder when the field metadata only declares type Picklist.",
+      "example": "Inline: <valueSetDefinition>... | Referenced: <valueSetName>My_GVS</valueSetName> | Standard: resolve via StandardValueSets/"
+    },
+    {
+      "ruleId": "SF-PL-002",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type_in": [
+          "Picklist",
+          "MultiselectPicklist"
+        ]
+      },
+      "rule": "Inline picklist labels in Title Case",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "For inline picklists only, each value <label> must be Title Case (each space- or hyphen-separated word starts with uppercase).",
+      "example": "Valid: Parent, Sub-Account | Invalid: sub-account"
+    },
+    {
+      "ruleId": "SF-PL-003",
+      "component_type": "CustomField",
+      "applies_when": {
+        "field_type_in": [
+          "Picklist",
+          "MultiselectPicklist"
+        ]
+      },
+      "rule": "Prefer Global Value Sets for reuse",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "If identical inline picklist value sets are detected across multiple fields, a Global Value Set may be more appropriate.",
+      "example": "Warn when the same label set appears in multiple inline picklists"
+    },
+    {
+      "ruleId": "SF-FX-001",
+      "component_type": "CustomField",
+      "applies_when": {
+        "has_formula": true
+      },
+      "rule": "Formula field detection",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "If field metadata contains a <formula> element, treat it as a Formula field regardless of its declared <type>.",
+      "example": "RolesImage__c contains <formula>...</formula>"
+    },
+    {
+      "ruleId": "SF-FX-002",
+      "component_type": "CustomField",
+      "applies_when": {
+        "has_formula": true
+      },
+      "rule": "Formula derivation documented",
+      "severity": "WARNING",
+      "pending_review": true,
+      "description": "Formula fields should explain derivation logic in the description, but enforcement depends on governance policy.",
+      "example": "Prefer description like: \"Derived from X and Y to compute Z\""
+    },
+    {
+      "ruleId": "SF-OBJ-001",
+      "component_type": "CustomObject",
+      "rule": "Custom object description is mandatory",
+      "severity": "ERROR",
+      "pending_review": false,
+      "description": "Custom object metadata must contain a non-empty <description> element.",
+      "example": "<description>Relationship between accounts.</description>"
+    }
+  ]

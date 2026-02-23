@@ -1,0 +1,50 @@
+from __future__ import annotations
+
+from nomenclatureReport.analyzer.rules.custom_field_rules import (
+    rule_boolean_prefix,
+    rule_custom_field_description,
+    rule_custom_field_help_text,
+    rule_custom_field_internal_camelcase,
+    rule_custom_field_name_format,
+    rule_custom_field_technical_prefix,
+    rule_currency_suffix,
+    rule_date_suffix,
+    rule_datetime_suffix,
+    rule_external_id_naming,
+    rule_external_id_unique,
+    rule_formula_derivation_documented,
+    rule_formula_type_detection,
+    rule_lookup_role_based,
+    rule_number_count_suffix,
+    rule_percent_suffix,
+    rule_picklist_labels_title_case,
+    rule_picklist_prefer_gvs,
+    rule_picklist_value_source,
+    rule_time_suffix,
+)
+from nomenclatureReport.analyzer.rules.custom_object_rules import rule_object_description
+
+
+RULE_REGISTRY = {
+    "SF-NAME-001": rule_custom_field_name_format,
+    "SF-NAME-002": rule_custom_field_technical_prefix,
+    "SF-DOC-001": rule_custom_field_description,
+    "SF-DOC-002": rule_custom_field_help_text,
+    "SF-NAME-003": rule_custom_field_internal_camelcase,
+    "SF-BOOL-001": rule_boolean_prefix,
+    "SF-DATE-001": rule_date_suffix,
+    "SF-DATE-002": rule_datetime_suffix,
+    "SF-DATE-003": rule_time_suffix,
+    "SF-NUM-001": rule_currency_suffix,
+    "SF-NUM-002": rule_percent_suffix,
+    "SF-NUM-003": rule_number_count_suffix,
+    "SF-ID-001": rule_external_id_naming,
+    "SF-ID-002": rule_external_id_unique,
+    "SF-REL-001": rule_lookup_role_based,
+    "SF-PL-001": rule_picklist_value_source,
+    "SF-PL-002": rule_picklist_labels_title_case,
+    "SF-PL-003": rule_picklist_prefer_gvs,
+    "SF-FX-001": rule_formula_type_detection,
+    "SF-FX-002": rule_formula_derivation_documented,
+    "SF-OBJ-001": rule_object_description,
+}

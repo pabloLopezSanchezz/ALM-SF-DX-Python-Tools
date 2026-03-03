@@ -1,0 +1,31 @@
+{
+  "result": {
+    "details": {
+      "runTestResult": {
+        "codeCoverage": [
+          {
+            "name": "MyService",
+            "numLocations": 10,
+            "numLocationsNotCovered": 2
+          },
+          {
+            "name": "MyZeroClass",
+            "numLocations": 0,
+            "numLocationsNotCovered": 0
+          },
+          {
+            "name": "MyOtherService",
+            "numLocations": 5,
+            "numLocationsNotCovered": 5
+          },
+          {
+            "name": "MyServiceTest",
+            "numLocations": 100,
+            "numLocationsNotCovered": 100
+          }
+        ]
+      }
+    }
+  }
+}
+

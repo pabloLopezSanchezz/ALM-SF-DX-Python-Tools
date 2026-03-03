@@ -1,0 +1,770 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Nomenclature Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ["Outfit", "system-ui", "sans-serif"],
+              mono: ["JetBrains Mono", "monospace"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        background: #fafafa;
+      }
+
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(228, 228, 231, 0.5);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          0 20px 40px -15px rgba(0, 0, 0, 0.05);
+      }
+
+      .glass-dark {
+        background: rgba(255, 255, 255, 0.06);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      }
+
+      .smooth {
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .tactile:active {
+        transform: scale(0.98) !important;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(16px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .slide-up {
+        opacity: 0;
+        animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      }
+      .delay-1 {
+        animation-delay: 60ms;
+      }
+      .delay-2 {
+        animation-delay: 120ms;
+      }
+      .delay-3 {
+        animation-delay: 180ms;
+      }
+      .delay-4 {
+        animation-delay: 240ms;
+      }
+      .delay-5 {
+        animation-delay: 300ms;
+      }
+      .delay-6 {
+        animation-delay: 360ms;
+      }
+
+      .donut-chart {
+        transform: rotate(-90deg);
+      }
+
+      .accordion-body {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .accordion-body.open {
+        max-height: 2000px;
+      }
+      .accordion-chevron {
+        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .accordion-chevron.open {
+        transform: rotate(180deg);
+      }
+
+      .issue-detail {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .issue-detail.open {
+        max-height: 300px;
+      }
+
+      .drawer-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(24, 24, 27, 0.5);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 80;
+      }
+      .drawer-overlay.open {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .drawer-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        height: 100%;
+        width: min(480px, 92vw);
+        background: rgba(255, 255, 255, 0.97);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-left: 1px solid rgba(228, 228, 231, 0.5);
+        box-shadow: -20px 0 60px rgba(0, 0, 0, 0.12);
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        z-index: 90;
+      }
+      .drawer-panel.open {
+        transform: translateX(0);
+      }
+
+      .progress-fill {
+        background: linear-gradient(90deg, #059669, #10b981);
+        transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .filter-chip {
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .filter-chip.active {
+        background: #059669;
+        color: white;
+        border-color: #059669;
+      }
+      .filter-chip:hover:not(.active) {
+        border-color: #059669;
+        color: #059669;
+      }
+
+      .tab-btn {
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .tab-btn::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #059669;
+        transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .tab-btn.active::after,
+      .tab-btn:hover::after {
+        width: 100%;
+      }
+      .tab-btn.active {
+        color: #059669;
+      }
+
+      .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
+        border-color: #059669;
+      }
+
+      .issue-row {
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        cursor: pointer;
+      }
+      .issue-row:hover {
+        background: rgba(5, 150, 105, 0.04);
+      }
+    </style>
+  </head>
+
+  <body class="antialiased font-sans text-zinc-900">
+    <!-- ════════════════════════════ HERO ════════════════════════════ -->
+    <header class="relative bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 overflow-hidden">
+      <div
+        class="absolute inset-0 pointer-events-none"
+        style="
+          background-image: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.04) 1px,
+            transparent 1px
+          );
+          background-size: 24px 24px;
+        "
+      ></div>
+
+      <div class="relative max-w-[1400px] mx-auto px-4 md:px-8">
+        <div class="flex items-center justify-between py-5">
+          <div class="flex items-center gap-2.5">
+            <div class="w-7 h-7 rounded-lg bg-emerald-600 flex items-center justify-center">
+              <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+              </svg>
+            </div>
+            <span class="text-white/50 text-sm font-medium">NomenclatureReport</span>
+          </div>
+          <span class="text-white/40 text-xs font-mono">{{ generated_at }}</span>
+        </div>
+
+        <div class="grid md:grid-cols-5 gap-8 md:gap-16 pb-10 md:pb-14 pt-2 md:pt-6">
+          <!-- Left: text (3 / 5) -->
+          <div class="md:col-span-3 slide-up">
+            <p class="text-emerald-500/70 text-[11px] uppercase tracking-[0.3em] font-semibold mb-3">Salesforce DX</p>
+            <h1 class="text-4xl md:text-5xl font-bold text-white tracking-tighter leading-[1.05]">
+              Nomenclature<br />Report
+            </h1>
+            <p class="mt-4 text-white/40 text-base leading-relaxed max-w-[50ch]">
+              Naming convention and documentation analysis focused on governance, quality, and consistency.
+            </p>
+            <div class="mt-5 flex flex-wrap gap-2">
+              <span
+                class="inline-flex items-center gap-1.5 rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1 text-[11px] text-white/40 font-mono"
+              >
+                <svg class="w-3 h-3 text-emerald-500/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                </svg>
+                <span class="truncate max-w-[180px] md:max-w-[280px]" title="{{ project_path }}">{{ project_path | truncate(40) }}</span>
+              </span>
+              <span
+                class="inline-flex items-center gap-1.5 rounded-md bg-white/[0.04] border border-white/[0.06] px-2.5 py-1 text-[11px] text-white/40 font-mono"
+              >
+                <svg class="w-3 h-3 text-emerald-500/50 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="truncate max-w-[180px] md:max-w-[280px]" title="{{ rules_path }}">{{ rules_path | truncate(40) }}</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: stats (2 / 5) -->
+          <div class="md:col-span-2 flex flex-col gap-2.5">
+            <div class="glass-dark rounded-2xl px-5 py-4 slide-up delay-1">
+              <p class="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Total Issues</p>
+              <p class="text-3xl font-bold text-white font-mono tracking-tight">{{ total_issues }}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-2.5">
+              <div class="glass-dark rounded-2xl px-5 py-4 slide-up delay-2">
+                <p class="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Errors</p>
+                <p class="text-xl font-bold text-rose-400 font-mono">{{ error_count }}</p>
+              </div>
+              <div class="glass-dark rounded-2xl px-5 py-4 slide-up delay-3">
+                <p class="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Warnings</p>
+                <p class="text-xl font-bold text-amber-400 font-mono">{{ warning_count }}</p>
+              </div>
+              <div class="glass-dark rounded-2xl px-5 py-4 slide-up delay-4">
+                <p class="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Pending</p>
+                <p class="text-xl font-bold text-white/90 font-mono">{{ pending_review_count }}</p>
+              </div>
+              <div
+                id="openComponentBreakdown"
+                class="glass-dark rounded-2xl px-5 py-4 slide-up delay-5 cursor-pointer group smooth hover:bg-white/[0.08]"
+                title="View component breakdown"
+              >
+                <div class="flex items-start justify-between">
+                  <div>
+                    <p class="text-[10px] text-white/30 uppercase tracking-widest mb-0.5">Components</p>
+                    <p class="text-xl font-bold text-emerald-400 font-mono">{{ total_components_analyzed }}</p>
+                  </div>
+                  <svg class="w-3.5 h-3.5 text-white/20 group-hover:text-emerald-400 smooth mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ════════════════════════════ COMPONENT DRAWER ════════════════════════════ -->
+    <div id="drawerOverlay" class="drawer-overlay"></div>
+    <aside id="drawerPanel" class="drawer-panel">
+      <div class="h-full flex flex-col">
+        <div class="px-6 py-5 border-b border-zinc-200/50 flex items-center justify-between">
+          <div>
+            <h3 class="text-base font-semibold text-zinc-900">Component Breakdown</h3>
+            <p class="text-xs text-zinc-500 mt-0.5 font-mono">{{ total_components_analyzed }} analyzed</p>
+          </div>
+          <button id="closeDrawer" class="p-2 rounded-xl hover:bg-zinc-100 smooth" aria-label="Close">
+            <svg class="w-4 h-4 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="flex-1 overflow-auto px-6 py-5">
+          <div class="space-y-3">
+            {% for component_type, count in component_counts.items() %}
+            <div class="rounded-xl border border-zinc-200/50 bg-white p-4">
+              <div class="flex items-center justify-between mb-2.5">
+                <p class="text-sm font-medium text-zinc-900">{{ component_type }}</p>
+                <span class="text-sm font-semibold text-emerald-600 font-mono">{{ count }}</span>
+              </div>
+              <div class="h-1.5 rounded-full bg-zinc-100 overflow-hidden">
+                <div class="progress-fill h-full rounded-full" style="width: {{ ((count / (total_components_analyzed or 1)) * 100) | round(1) }}%"></div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ════════════════════════════ STICKY NAV ════════════════════════════ -->
+    <nav class="bg-white/80 backdrop-blur-lg border-b border-zinc-200/50 sticky top-0 z-40">
+      <div class="max-w-[1400px] mx-auto px-4 md:px-8 flex items-center justify-between h-12">
+        <div class="flex items-center gap-1">
+          <button class="tab-btn active px-3 py-1.5 text-sm font-medium text-zinc-600 rounded-md" data-tab="severity">Severity</button>
+          <button class="tab-btn px-3 py-1.5 text-sm font-medium text-zinc-400 rounded-md" data-tab="components">Components</button>
+          <button class="tab-btn px-3 py-1.5 text-sm font-medium text-zinc-400 rounded-md" data-tab="rules">Rules</button>
+        </div>
+        <p class="text-xs text-zinc-400 font-mono hidden md:block">{{ generated_at }}</p>
+      </div>
+    </nav>
+
+    <!-- ════════════════════════════ MAIN ════════════════════════════ -->
+    <main class="max-w-[1400px] mx-auto px-4 md:px-8 py-10 md:py-14">
+      <!-- ───────── OVERVIEW ───────── -->
+      <section class="mb-14 slide-up delay-2">
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-zinc-900 tracking-tight">Overview</h2>
+          <p class="text-sm text-zinc-500 mt-1 max-w-[65ch]">Visual summary of the analysis results.</p>
+        </div>
+
+        <!-- Tab: Severity -->
+        <div id="tab-severity" class="tab-content">
+          <div class="grid md:grid-cols-5 gap-6">
+            <div class="md:col-span-3 glass-panel rounded-[2rem] p-8">
+              <h3 class="text-[11px] uppercase tracking-[0.2em] text-emerald-600 font-semibold mb-6">Severity Distribution</h3>
+              <div class="flex flex-col sm:flex-row items-center gap-10">
+                <div class="relative w-44 h-44 flex-shrink-0">
+                  <svg viewBox="0 0 42 42" class="w-44 h-44 donut-chart">
+                    <circle cx="21" cy="21" r="15.915" fill="transparent" stroke="#f4f4f5" stroke-width="5" />
+                    {% set total = severity_data | sum(attribute='value') or 1 %}
+                    {% set ns = namespace(offset=25) %}
+                    {% for item in severity_data %}
+                    {% set pct = (item.value / total * 100) %}
+                    <circle
+                      cx="21" cy="21" r="15.915"
+                      fill="transparent"
+                      stroke="{{ item.color }}"
+                      stroke-width="5"
+                      stroke-dasharray="{{ pct }} {{ 100 - pct }}"
+                      stroke-dashoffset="{{ ns.offset }}"
+                      stroke-linecap="round"
+                    />
+                    {% set ns.offset = ns.offset - pct %}
+                    {% endfor %}
+                  </svg>
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span class="text-3xl font-bold text-zinc-900 font-mono">{{ total_issues }}</span>
+                    <span class="text-[10px] text-zinc-400 uppercase tracking-widest mt-0.5">Total</span>
+                  </div>
+                </div>
+                <div class="space-y-4 flex-1 w-full">
+                  {% for item in severity_data %}
+                  <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full flex-shrink-0" style="background: {{ item.color }}"></div>
+                    <div class="flex-1">
+                      <p class="text-sm text-zinc-500">{{ item.label }}</p>
+                    </div>
+                    <p class="text-lg font-bold text-zinc-900 font-mono">{{ item.value }}</p>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+            </div>
+
+            <div class="md:col-span-2 glass-panel rounded-[2rem] p-8">
+              <h3 class="text-[11px] uppercase tracking-[0.2em] text-emerald-600 font-semibold mb-6">Top Rules Violated</h3>
+              <div class="space-y-4">
+                {% for item in top_rules_data[:5] %}
+                <div>
+                  <div class="flex items-center justify-between mb-1.5">
+                    <p class="text-sm font-medium text-zinc-900 truncate max-w-[70%]" title="{{ item.title }}">{{ item.title | truncate(35) }}</p>
+                    <span class="text-sm font-bold text-emerald-600 font-mono">{{ item.value }}</span>
+                  </div>
+                  <div class="h-1.5 bg-zinc-100 rounded-full overflow-hidden">
+                    <div class="progress-fill h-full rounded-full" style="width: {{ (item.value / (top_rules_data[0].value or 1) * 100) | int }}%"></div>
+                  </div>
+                  <p class="text-[10px] text-zinc-400 mt-1 font-mono">{{ item.label }}</p>
+                </div>
+                {% endfor %}
+                {% if not top_rules_data %}
+                <div class="py-8 text-center">
+                  <p class="text-sm text-zinc-400">No rules violated</p>
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Components -->
+        <div id="tab-components" class="tab-content hidden">
+          <div class="glass-panel rounded-[2rem] p-8">
+            <h3 class="text-[11px] uppercase tracking-[0.2em] text-emerald-600 font-semibold mb-6">Component Coverage</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {% for component_type, count in component_counts.items() %}
+              <div class="rounded-2xl border border-zinc-200/50 bg-white p-5 smooth hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)] hover:-translate-y-1 tactile">
+                <p class="text-2xl font-bold text-zinc-900 font-mono">{{ count }}</p>
+                <p class="text-xs text-zinc-500 mt-1">{{ component_type }}</p>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Rules -->
+        <div id="tab-rules" class="tab-content hidden">
+          <div class="glass-panel rounded-[2rem] p-8">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-[11px] uppercase tracking-[0.2em] text-emerald-600 font-semibold">All Rules</h3>
+              <span class="text-xs text-zinc-400 font-mono">{{ rule_stats | length }} rules</span>
+            </div>
+            <div class="divide-y divide-zinc-100">
+              {% for rule in rule_stats %}
+              <div>
+                <button
+                  class="accordion-trigger w-full flex items-center justify-between py-3.5 px-2 rounded-lg hover:bg-emerald-50/50 smooth text-left"
+                  data-accordion="rule-{{ loop.index }}"
+                >
+                  <div class="flex-1 min-w-0 mr-4">
+                    <p class="text-sm font-medium text-zinc-900">{{ rule.title }}</p>
+                    <p class="text-[11px] text-zinc-400 mt-0.5 font-mono">{{ rule.rule_id }} &middot; {{ rule.severity }}</p>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-sm font-bold font-mono {% if rule.triggered %}text-emerald-600{% else %}text-zinc-300{% endif %}">
+                      {{ rule.count }}
+                    </span>
+                    <svg class="accordion-chevron w-4 h-4 text-zinc-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </button>
+                <div class="accordion-body" id="rule-{{ loop.index }}">
+                  <div class="px-2 pb-3 text-sm text-zinc-500 leading-relaxed">
+                    {{ rule.description if rule.description else "No description available." }}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {% if missing_rule_ids %}
+      <!-- ───────── MISSING RULES ───────── -->
+      <section class="mb-14">
+        <div class="rounded-[2rem] border border-amber-200/60 bg-amber-50/40 p-8">
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-base font-semibold text-zinc-900">Missing Rule Implementations</h3>
+              <p class="text-sm text-zinc-500 mt-0.5 max-w-[65ch]">These rules exist in rules.json but are not yet implemented in the analyzer.</p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-2 pl-11">
+            {% for rule_id in missing_rule_ids %}
+            <span class="px-3 py-1 text-xs font-mono rounded-full bg-amber-100 text-amber-700 border border-amber-200/60">
+              {{ rule_id }}
+            </span>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+      {% endif %}
+
+      <!-- ───────── ISSUE EXPLORER ───────── -->
+      <section>
+        <div class="mb-8">
+          <h2 class="text-xl font-semibold text-zinc-900 tracking-tight">Issue Explorer</h2>
+          <p class="text-sm text-zinc-500 mt-1 max-w-[65ch]">Filter and explore all findings across your Salesforce components.</p>
+        </div>
+
+        <!-- Filters -->
+        <div class="glass-panel rounded-2xl p-5 mb-6">
+          <div class="flex flex-col lg:flex-row gap-4">
+            <div class="flex-1">
+              <input
+                id="searchInput"
+                type="text"
+                placeholder="Search by component, rule or message..."
+                class="search-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 bg-white text-sm text-zinc-900 placeholder:text-zinc-400 focus:outline-none smooth"
+              />
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs text-zinc-400 mr-1">Severity:</span>
+              <button class="filter-chip active px-3 py-1.5 rounded-full border border-zinc-200 text-xs font-medium tactile" data-filter="severity" data-value="ALL">All</button>
+              <button class="filter-chip px-3 py-1.5 rounded-full border border-zinc-200 text-xs font-medium tactile" data-filter="severity" data-value="ERROR">Errors</button>
+              <button class="filter-chip px-3 py-1.5 rounded-full border border-zinc-200 text-xs font-medium tactile" data-filter="severity" data-value="WARNING">Warnings</button>
+            </div>
+            <select
+              id="componentSelect"
+              class="px-3 py-2.5 rounded-xl border border-zinc-200 bg-white text-xs text-zinc-700 focus:outline-none focus:border-emerald-500 smooth"
+            >
+              <option value="ALL">All Components</option>
+              {% for component_type in component_counts.keys() %}
+              <option value="{{ component_type }}">{{ component_type }}</option>
+              {% endfor %}
+            </select>
+            <label class="flex items-center gap-2 text-xs text-zinc-500 cursor-pointer whitespace-nowrap">
+              <input id="pendingOnly" type="checkbox" class="w-3.5 h-3.5 accent-emerald-600 rounded" />
+              Pending only
+            </label>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="glass-panel rounded-[2rem] overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-zinc-100">
+                  <th class="px-6 py-3.5 text-left text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Severity</th>
+                  <th class="px-6 py-3.5 text-left text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Rule</th>
+                  <th class="px-6 py-3.5 text-left text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Component</th>
+                  <th class="px-6 py-3.5 text-left text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Type</th>
+                  <th class="px-6 py-3.5 text-left text-[10px] uppercase tracking-widest text-zinc-400 font-semibold">Message</th>
+                </tr>
+              </thead>
+              <tbody id="issuesTable" class="divide-y divide-zinc-100/80">
+                {% for issue in issues %}
+                <tr
+                  class="issue-row"
+                  data-severity="{{ issue.severity }}"
+                  data-component="{{ issue.component_type }}"
+                  data-pending="{{ 'true' if issue.pending_review else 'false' }}"
+                  data-search="{{ (issue.rule_id ~ ' ' ~ issue.component_name ~ ' ' ~ issue.component_type ~ ' ' ~ issue.message ~ ' ' ~ issue.component_path)|lower }}"
+                  data-issue-id="{{ loop.index }}"
+                >
+                  <td class="px-6 py-3.5">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-semibold
+                        {% if issue.severity == 'ERROR' %}bg-rose-50 text-rose-600{% else %}bg-amber-50 text-amber-600{% endif %}"
+                    >
+                      {{ issue.severity }}
+                    </span>
+                    {% if issue.pending_review %}
+                    <span class="ml-1.5 inline-flex items-center px-2 py-0.5 rounded text-[9px] uppercase tracking-wider bg-zinc-900 text-white font-medium">
+                      Review
+                    </span>
+                    {% endif %}
+                  </td>
+                  <td class="px-6 py-3.5">
+                    <p class="text-sm font-medium text-zinc-900">{{ rule_catalog.get(issue.rule_id, {}).get("rule", issue.rule_id) | truncate(40) }}</p>
+                    <p class="text-[10px] text-zinc-400 mt-0.5 font-mono">{{ issue.rule_id }}</p>
+                  </td>
+                  <td class="px-6 py-3.5 text-zinc-700">{{ issue.component_name }}</td>
+                  <td class="px-6 py-3.5 text-zinc-500 font-mono text-xs">{{ issue.component_type }}</td>
+                  <td class="px-6 py-3.5 text-zinc-500">{{ issue.message | truncate(60) }}</td>
+                </tr>
+                <tr class="issue-detail-row" id="detail-{{ loop.index }}">
+                  <td colspan="5" class="px-6 py-0">
+                    <div class="issue-detail">
+                      <div class="py-4 pl-4 border-l-2 border-emerald-500 ml-2 space-y-2 text-sm">
+                        <div>
+                          <p class="text-zinc-400 text-[10px] uppercase tracking-widest mb-0.5">Message</p>
+                          <p class="text-zinc-700 leading-relaxed">{{ issue.message }}</p>
+                        </div>
+                        <div>
+                          <p class="text-zinc-400 text-[10px] uppercase tracking-widest mb-0.5">Path</p>
+                          <code class="bg-zinc-100 px-2 py-0.5 rounded text-xs font-mono text-zinc-700">{{ issue.component_path }}</code>
+                        </div>
+                        <div>
+                          <p class="text-zinc-400 text-[10px] uppercase tracking-widest mb-0.5">Rule description</p>
+                          <p class="text-zinc-700 leading-relaxed">{{ rule_catalog.get(issue.rule_id, {}).get("description", "N/A") }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                {% endfor %}
+                {% if not issues %}
+                <tr>
+                  <td colspan="5" class="px-6 py-16 text-center">
+                    <div class="flex flex-col items-center">
+                      <div class="w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center mb-4">
+                        <svg class="w-7 h-7 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <p class="text-base font-semibold text-zinc-900">All clear</p>
+                      <p class="text-sm text-zinc-500 mt-1 max-w-[40ch]">
+                        No naming convention issues detected. Your Salesforce components follow the established rules.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+                {% endif %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-4 text-xs text-zinc-400 font-mono">
+          <span id="resultsCount">{{ issues | length }}</span> issues
+        </div>
+      </section>
+    </main>
+
+    <!-- ════════════════════════════ FOOTER ════════════════════════════ -->
+    <footer class="border-t border-zinc-100 mt-16">
+      <div class="max-w-[1400px] mx-auto px-4 md:px-8 py-6 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-5 h-5 rounded bg-emerald-600/20 flex items-center justify-center">
+            <svg class="w-2.5 h-2.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4" />
+            </svg>
+          </div>
+          <span class="text-xs text-zinc-400">NomenclatureReport</span>
+        </div>
+        <span class="text-xs text-zinc-400 font-mono">{{ generated_at }}</span>
+      </div>
+    </footer>
+
+    <!-- ════════════════════════════ SCRIPTS ════════════════════════════ -->
+    <script>
+      var severityData = {{ severity_data | tojson }};
+      var topRulesData = {{ top_rules_data | tojson }};
+
+      var searchInput = document.getElementById("searchInput");
+      var componentSelect = document.getElementById("componentSelect");
+      var pendingOnly = document.getElementById("pendingOnly");
+      var rows = Array.from(document.querySelectorAll(".issue-row"));
+      var resultsCount = document.getElementById("resultsCount");
+
+      var activeSeverity = "ALL";
+
+      function applyFilters() {
+        var search = searchInput.value.toLowerCase();
+        var comp = componentSelect.value;
+        var pending = pendingOnly.checked;
+        var count = 0;
+
+        rows.forEach(function (row) {
+          var s = row.dataset.severity;
+          var c = row.dataset.component;
+          var p = row.dataset.pending === "true";
+          var h = row.dataset.search || "";
+          var detail = document.getElementById("detail-" + row.dataset.issueId);
+
+          var ok =
+            (activeSeverity === "ALL" || activeSeverity === s) &&
+            (comp === "ALL" || comp === c) &&
+            (!pending || p) &&
+            h.includes(search);
+
+          row.classList.toggle("hidden", !ok);
+          if (detail) detail.classList.toggle("hidden", !ok);
+          if (ok) count++;
+        });
+
+        resultsCount.textContent = count;
+      }
+
+      searchInput.addEventListener("input", applyFilters);
+      componentSelect.addEventListener("change", applyFilters);
+      pendingOnly.addEventListener("change", applyFilters);
+
+      document.querySelectorAll('[data-filter="severity"]').forEach(function (chip) {
+        chip.addEventListener("click", function () {
+          document.querySelectorAll('[data-filter="severity"]').forEach(function (c) {
+            c.classList.remove("active");
+          });
+          chip.classList.add("active");
+          activeSeverity = chip.dataset.value;
+          applyFilters();
+        });
+      });
+
+      document.querySelectorAll(".tab-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          document.querySelectorAll(".tab-btn").forEach(function (b) {
+            b.classList.remove("active");
+            b.classList.add("text-zinc-400");
+            b.classList.remove("text-zinc-600");
+          });
+          btn.classList.add("active");
+          btn.classList.remove("text-zinc-400");
+          btn.classList.add("text-zinc-600");
+
+          document.querySelectorAll(".tab-content").forEach(function (c) {
+            c.classList.add("hidden");
+          });
+          var target = document.getElementById("tab-" + btn.dataset.tab);
+          if (target) target.classList.remove("hidden");
+        });
+      });
+
+      document.querySelectorAll(".accordion-trigger").forEach(function (trigger) {
+        trigger.addEventListener("click", function () {
+          var target = document.getElementById(trigger.dataset.accordion);
+          if (target) {
+            target.classList.toggle("open");
+            var chevron = trigger.querySelector(".accordion-chevron");
+            if (chevron) chevron.classList.toggle("open");
+          }
+        });
+      });
+
+      rows.forEach(function (row) {
+        row.addEventListener("click", function () {
+          var detail = document.getElementById("detail-" + row.dataset.issueId);
+          if (detail) {
+            var inner = detail.querySelector(".issue-detail");
+            if (inner) inner.classList.toggle("open");
+          }
+        });
+      });
+
+      var drawerPanel = document.getElementById("drawerPanel");
+      var drawerOverlay = document.getElementById("drawerOverlay");
+      var openBtn = document.getElementById("openComponentBreakdown");
+      var closeBtn = document.getElementById("closeDrawer");
+
+      function openDrawer() {
+        drawerPanel.classList.add("open");
+        drawerOverlay.classList.add("open");
+      }
+      function closeDrawer() {
+        drawerPanel.classList.remove("open");
+        drawerOverlay.classList.remove("open");
+      }
+
+      if (openBtn) openBtn.addEventListener("click", openDrawer);
+      if (closeBtn) closeBtn.addEventListener("click", closeDrawer);
+      if (drawerOverlay) drawerOverlay.addEventListener("click", closeDrawer);
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeDrawer();
+      });
+    </script>
+  </body>
+</html>

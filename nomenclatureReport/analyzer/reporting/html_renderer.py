@@ -40,7 +40,7 @@ class HtmlReportRenderer:
         rules_path: Path,
         components: list[Component],
     ) -> str:
-        template = self._env.get_template("report.html.j2")
+        template = self._env.get_template("report_new.html.j2")
         context = build_context(
             report=report,
             project_path=project_path,
@@ -73,17 +73,17 @@ def build_context(
         {
             "label": "Errors",
             "value": severity_counts.get("ERROR", 0),
-            "color": "#f78154",
+            "color": "#e11d48",
         },
         {
             "label": "Warnings",
             "value": severity_counts.get("WARNING", 0),
-            "color": "#805100",
+            "color": "#d97706",
         },
         {
             "label": "Info",
             "value": max(total_issues - severity_counts.get("ERROR", 0) - severity_counts.get("WARNING", 0), 0),
-            "color": "#141613",
+            "color": "#71717a",
         },
     ]
 

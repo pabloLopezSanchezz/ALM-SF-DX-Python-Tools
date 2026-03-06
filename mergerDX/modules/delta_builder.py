@@ -8,7 +8,7 @@ import shutil
 from modules.git import checkout, fetch, prepare_and_merge
 from modules.parser.parse_file import parseFile
 from modules.utils import INFO_TAG, call_subprocess, getXmlNamesFromJSON, IDENTATION, PARSEABLE_METADATA
-from modules.utils.exceptions import NoDifferencesException
+from modules.utils.exceptions import NoDifferencesException, MissingFileException
 
 def mergeDelta( source, target, remote, doFetch, reset, deltaFolder, sourceFolder, apiVersion, describePath='describe.log'):
     ''' Builds delta package in the destination folder '''
@@ -334,7 +334,10 @@ def copyFiles(srcFolder, folder, apiname, deltaFolder, hasMetaFile):
 
 
 def copyFile(origin, destination):
-    shutil.copy( origin, destination )
+    try:
+        shutil.copy( origin, destination )
+    except FileNotFoundError:
+        raise MissingFileException( origin )
 
 
 def copyTree(origin, destination):

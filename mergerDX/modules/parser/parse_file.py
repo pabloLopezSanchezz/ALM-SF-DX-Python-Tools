@@ -3,12 +3,15 @@ import xml.etree.ElementTree as elTree
 from modules.git.utils import get_file
 from modules.utils import XMLNS
 from modules.utils.utilities import getFullName
-from modules.utils.exceptions import DuplicatedTags
+from modules.utils.exceptions import DuplicatedTags, MalformedXMLException
 
 def parseFile(filename, reference):
 
 	fileString	= get_file( filename, reference )
-	xmlData		= elTree.fromstring( fileString )
+	try:
+		xmlData = elTree.fromstring( fileString )
+	except elTree.ParseError as e:
+		raise MalformedXMLException( filename, str(e) )
 	rootTag		= xmlData.tag.split( XMLNS )[ 1 ]
 
 	setDuplicatedFullNames = set()

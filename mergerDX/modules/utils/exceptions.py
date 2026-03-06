@@ -115,6 +115,30 @@ class MergeException(MergerException):
                              'check output')
 
 
+class MissingFileException(MergerException):
+    ''' Exception raised when a required source file is not found on disk '''
+    ERROR_CODE = 17
+
+    def __init__(self, filepath):
+        super().__init__(f"Missing file: '{filepath}'")
+
+
+class MalformedXMLException(MergerException):
+    ''' Exception raised when XML parsing fails on a metadata file '''
+    ERROR_CODE = 18
+
+    def __init__(self, filename, detail):
+        super().__init__(f"Malformed XML in file '{filename}': {detail}")
+
+
+class GitShowException(MergerException):
+    ''' Exception raised when git show fails to retrieve a file at a given revision '''
+    ERROR_CODE = 19
+
+    def __init__(self, filepath, revision, detail):
+        super().__init__(f"Could not retrieve file '{filepath}' at revision '{revision}': {detail.strip()}")
+
+
 # Release Exceptions
 
 

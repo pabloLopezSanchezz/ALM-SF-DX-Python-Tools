@@ -2,7 +2,7 @@
 import re
 
 from modules.utils import call_subprocess
-from modules.utils.exceptions import MalformedRemoteUrl
+from modules.utils.exceptions import MalformedRemoteUrl, GitShowException
 
 
 def get_short_sha(long_sha):
@@ -64,7 +64,9 @@ def parse_conflicts(stdout):
 
 def get_file(filepath, revision):
     ''' Prints the file from the passed revision '''
-    output, _ = call_subprocess(f'git show {revision}:"{filepath}"', False)
+    output, returncode = call_subprocess(f'git show {revision}:"{filepath}"', False)
+    if returncode != 0:
+        raise GitShowException( filepath, revision, output )
     return output.encode( 'utf-8' )
 
 

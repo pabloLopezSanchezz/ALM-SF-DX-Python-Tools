@@ -51,7 +51,13 @@ def main():
     except MergerException as exception:
         print( f'{FATAL_LINE} {exception}, exiting...' )
         print( f'##vso[task.logissue type=error;]{exception}' )
+        print( f'##vso[task.setvariable variable=buildDeltaErrorDetail]{exception}' )
         sys.exit( exception.ERROR_CODE )
+    except Exception as exception:
+        print( f'{FATAL_LINE} Unexpected error: {exception}, exiting...' )
+        print( f'##vso[task.logissue type=error;]Unexpected error: {exception}' )
+        print( f'##vso[task.setvariable variable=buildDeltaErrorDetail]Unexpected error: {exception}' )
+        sys.exit( 1 )
 
 
 if __name__ == '__main__':

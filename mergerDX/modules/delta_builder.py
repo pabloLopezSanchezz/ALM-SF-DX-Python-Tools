@@ -273,7 +273,7 @@ def copyFiles(srcFolder, folder, apiname, deltaFolder, hasMetaFile):
     elif folder == 'digitalExperiences':
         if '/' in apiname:
             pathParts       = apiname.split( '/' )
-            componentDir    = '/'.join( pathParts[ :-1 ] )
+            componentDir    = '/'.join( pathParts[ :min(len(pathParts) - 1, 4) ] )
             pathFolder      = f'{folder}/{componentDir}'
             srcPath         = f'{srcFolder}/{pathFolder}'
             if os.path.isdir( srcPath ):

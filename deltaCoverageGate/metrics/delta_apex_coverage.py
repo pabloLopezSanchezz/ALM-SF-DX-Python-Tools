@@ -30,6 +30,13 @@ class ThresholdResult:
     warnings: list[str]
 
 
+@dataclass(frozen=True)
+class DeltaApexMember:
+    name: str
+    suffix: str
+    path: Path
+
+
 def normalize_threshold(raw_value: str | None) -> ThresholdResult:
     """Parse threshold with fallback+clamp policy."""
     warnings: list[str] = []
@@ -58,18 +65,38 @@ def normalize_threshold(raw_value: str | None) -> ThresholdResult:
     return ThresholdResult(raw_value=raw_value, effective=clamped, warnings=warnings)
 
 
-def _scan_delta_apex_members(src_to_deploy: Path) -> set[str]:
-    members: set[str] = set()
+def _scan_delta_apex_members(src_to_deploy: Path) -> list[DeltaApexMember]:
+    members: dict[str, DeltaApexMember] = {}
     if not src_to_deploy.exists():
-        return members
+        return []
 
     for file_path in src_to_deploy.rglob("*"):
         if not file_path.is_file():
             continue
         suffix = file_path.suffix.lower()
         if suffix in {".cls", ".trigger"}:
-            members.add(file_path.stem.lower())
-    return members
+            member = DeltaApexMember(
+                name=file_path.stem.lower(),
+                suffix=suffix,
+                path=file_path,
+            )
+            members.setdefault(member.name, member)
+    return sorted(members.values(), key=lambda member: member.name)
+
+
+def _is_apex_test_member(member: DeltaApexMember) -> bool:
+    if member.suffix != ".cls":
+        return False
+
+    if member.name.endswith("test"):
+        return True
+
+    try:
+        contents = member.path.read_text(encoding="utf-8").lower()
+    except OSError:
+        return False
+
+    return "@istest" in contents
 
 
 def _extract_code_coverage_rows(validate_payload: dict[str, Any]) -> list[dict[str, Any]] | None:
@@ -126,9 +153,10 @@ def evaluate_delta_apex_coverage(
     """Evaluate delta-only Apex coverage status and diagnostics payload."""
     threshold = normalize_threshold(threshold_raw)
     delta_members = _scan_delta_apex_members(src_to_deploy)
+    delta_member_names = [member.name for member in delta_members]
 
     base_payload = {
-        "delta_apex_members_total": len(delta_members),
+        "delta_apex_members_total": len(delta_member_names),
         "delta_apex_members_gated": 0,
         "delta_apex_members_test_excluded": 0,
         "delta_apex_members_non_executable": 0,
@@ -145,14 +173,38 @@ def evaluate_delta_apex_coverage(
         "delta_apex_test_excluded_members": [],
     }
 
-    if not delta_members:
+    if not delta_member_names:
         return _build_payload(**base_payload), EXIT_CODE_OK
+
+    # Exclude test classes before requiring coverage data — a deploy that only
+    # contains test classes will have an empty codeCoverage array by design.
+    test_excluded_members = sorted(
+        member.name for member in delta_members if _is_apex_test_member(member)
+    )
+    candidate_members = sorted(set(delta_member_names).difference(set(test_excluded_members)))
+
+    if not candidate_members:
+        payload = _build_payload(
+            **{
+                **base_payload,
+                "delta_apex_members_test_excluded": len(test_excluded_members),
+                "delta_apex_test_excluded_members": test_excluded_members,
+                "status": STATUS_PASS_NA,
+                "status_message": (
+                    "Apex delta contains only test classes; "
+                    "coverage gate not applicable."
+                ),
+            }
+        )
+        return payload, EXIT_CODE_OK
 
     coverage_rows = _extract_code_coverage_rows(validate_payload)
     if not coverage_rows:
         payload = _build_payload(
             **{
                 **base_payload,
+                "delta_apex_members_test_excluded": len(test_excluded_members),
+                "delta_apex_test_excluded_members": test_excluded_members,
                 "status": STATUS_ERROR,
                 "status_message": (
                     "Apex delta exists but validate.json has missing/empty "
@@ -163,10 +215,6 @@ def evaluate_delta_apex_coverage(
         return payload, EXIT_CODE_ERROR
 
     index = _coverage_index(coverage_rows)
-    test_excluded_members = sorted(
-        member for member in delta_members if member.endswith("test")
-    )
-    candidate_members = sorted(delta_members.difference(test_excluded_members))
     unmatched_members = [member for member in candidate_members if member not in index]
 
     if unmatched_members:

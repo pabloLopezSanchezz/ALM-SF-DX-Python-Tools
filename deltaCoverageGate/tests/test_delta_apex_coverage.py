@@ -35,12 +35,19 @@ class DeltaApexCoverageEvaluatorTests(unittest.TestCase):
             )
         )
 
-    def _build_src_to_deploy(self, members: list[str]) -> Path:
+    def _build_src_to_deploy(
+        self, members: list[str] | dict[str, str], default_content: str = "// test"
+    ) -> Path:
         temp_dir = Path(tempfile.mkdtemp(prefix="delta-apex-"))
-        for member in members:
+        file_entries = (
+            members.items()
+            if isinstance(members, dict)
+            else ((member, default_content) for member in members)
+        )
+        for member, content in file_entries:
             file_path = temp_dir / member
             file_path.parent.mkdir(parents=True, exist_ok=True)
-            file_path.write_text("// test", encoding="utf-8")
+            file_path.write_text(content, encoding="utf-8")
         return temp_dir
 
     def test_pass_with_weighted_formula_and_exclusions(self) -> None:
@@ -66,6 +73,26 @@ class DeltaApexCoverageEvaluatorTests(unittest.TestCase):
         self.assertEqual(8, payload["coverage_sum_covered"])
         self.assertEqual(10, payload["coverage_sum_total"])
         self.assertEqual(80.0, payload["coverage_pct"])
+
+    def test_excludes_istest_class_when_name_is_not_conventional(self) -> None:
+        src_to_deploy = self._build_src_to_deploy(
+            {
+                "classes/MyService.cls": "public class MyService {}",
+                "classes/QualityGateSpec.cls": "@IsTest\nprivate class QualityGateSpec {}",
+            }
+        )
+        payload, exit_code = evaluate_delta_apex_coverage(
+            src_to_deploy=src_to_deploy,
+            validate_payload=self.validate_with_coverage,
+            threshold_raw="75",
+        )
+
+        self.assertEqual(STATUS_PASS, payload["status"])
+        self.assertEqual(EXIT_CODE_OK, exit_code)
+        self.assertEqual(1, payload["delta_apex_members_gated"])
+        self.assertEqual(1, payload["delta_apex_members_test_excluded"])
+        self.assertEqual(["qualitygatespec"], payload["delta_apex_test_excluded_members"])
+        self.assertEqual([], payload["delta_apex_unmatched_members"])
 
     def test_fail_when_weighted_coverage_below_threshold(self) -> None:
         src_to_deploy = self._build_src_to_deploy(
@@ -120,6 +147,23 @@ class DeltaApexCoverageEvaluatorTests(unittest.TestCase):
         self.assertEqual(STATUS_ERROR, payload["status"])
         self.assertEqual(EXIT_CODE_ERROR, exit_code)
         self.assertEqual(["unmatchedclass"], payload["delta_apex_unmatched_members"])
+
+    def test_non_test_class_without_istest_still_requires_coverage_row(self) -> None:
+        src_to_deploy = self._build_src_to_deploy(
+            {
+                "classes/MyService.cls": "public class MyService {}",
+                "classes/QualityGateSpec.cls": "public class QualityGateSpec {}",
+            }
+        )
+        payload, exit_code = evaluate_delta_apex_coverage(
+            src_to_deploy=src_to_deploy,
+            validate_payload=self.validate_with_coverage,
+            threshold_raw="85",
+        )
+
+        self.assertEqual(STATUS_ERROR, payload["status"])
+        self.assertEqual(EXIT_CODE_ERROR, exit_code)
+        self.assertEqual(["qualitygatespec"], payload["delta_apex_unmatched_members"])
 
     def test_threshold_fallback_and_clamp_warning(self) -> None:
         src_to_deploy = self._build_src_to_deploy(["classes/MyService.cls"])

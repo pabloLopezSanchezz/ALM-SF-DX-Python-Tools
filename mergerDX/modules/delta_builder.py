@@ -231,6 +231,9 @@ def iterateElement( elementValue, elementTag, identationLevel,  ):
         for keyTag in sorted( elementValue.keys() ):
             textValue += iterateElement( elementValue[ keyTag ], keyTag, identationLevel + 1 )
         textValue += f'{IDENTATION*identationLevel}</{elementTag}>\n'
+    elif type( elementValue ) is list:
+        for item in elementValue:
+            textValue += iterateElement( item, elementTag, identationLevel )
     else:
         textValue += f'{IDENTATION*identationLevel}<{elementTag}/>\n'
     return textValue
